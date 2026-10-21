@@ -78,7 +78,7 @@
 ## Этап 5 — TUI (textual) на Windows
 
 - [x] Каркас TUI: вкладки Scan / Watch / Top / History
-- [ ] Проверка в **Windows Terminal** и **conhost**
+- [x] Проверка в **Windows Terminal** и **conhost**
 - [x] Корректная работа UTF-8 / рамок / кириллицы (тема в тон проекта)
 - [x] Живые таблицы, сортировка, поиск
 - [x] `ininet-win tui` → TUI (каркас + рабочие вкладки)
