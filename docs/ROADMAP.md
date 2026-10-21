@@ -102,7 +102,7 @@
 - [x] PyInstaller one-file сборка (`ininet-win.spec`, `build.ps1`)
 - [x] Иконка, версия, метаданные (`assets/ininet.ico`, `version_info.txt`)
 - [ ] Проверка запуска на «чистой» Windows (без Python)
-- [ ] Артефакт в GitHub Releases
+- [x] Артефакт в GitHub Releases (CI по тегу `v*`, сборка из исходников)
 
 **Результат:** пользователь скачивает `ininet-win.exe` и запускает без установки Python.
 
@@ -129,7 +129,7 @@
 - [ ] Уведомления (Telegram / почта / webhook)
 - [ ] Документация (usage, examples)
 - [ ] Переключение репо в public
-- [ ] CI (GitHub Actions, windows-latest): линт, тесты, сборка
+- [x] CI (GitHub Actions, windows-latest): линт, тесты, релиз `.exe` по тегу
 
 **Результат:** проект доступен аудитории, готов к портфолио.
 

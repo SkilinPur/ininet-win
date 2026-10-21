@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build (without leading 'v'), e.g. 0.1.0"
+        required: true
+        default: "0.1.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Resolve version
+        id: ver
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $version = "${{ github.event.inputs.version }}"
+          } else {
+            $version = "${{ github.ref_name }}".TrimStart("v")
+          }
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Building version $version"
+
+      - name: Set version in pyproject.toml
+        shell: pwsh
+        run: |
+          $v = "${{ steps.ver.outputs.version }}"
+          (Get-Content pyproject.toml) `
+            -replace '^version\s*=\s*".*"', "version = `"$v`"" |
+            Set-Content pyproject.toml
+          Select-String -Path pyproject.toml -Pattern '^version'
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[tui,dev]" pyinstaller
+
+      - name: Lint and tests
+        run: |
+          ruff check .
+          pytest -q
+
+      - name: Generate assets
+        run: |
+          python tools/make_icon.py
+          python tools/make_version_info.py
+
+      - name: Build .exe
+        run: pyinstaller ininet-win.spec --noconfirm
+
+      - name: Smoke test .exe
+        shell: pwsh
+        run: |
+          $exe = "dist\ininet-win.exe"
+          if (-not (Test-Path $exe)) { throw "exe not found" }
+          & $exe --lang en version
+          if ($LASTEXITCODE -ne 0) { throw "smoke test failed" }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ininet-win-exe
+          path: dist/ininet-win.exe
+          if-no-files-found: error
+
+      - name: Publish GitHub Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/ininet-win.exe
+          generate_release_notes: true
+          fail_on_unmatched_files: true

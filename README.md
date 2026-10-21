@@ -1,5 +1,7 @@
 # ininet-win
 
+[![CI](https://github.com/SkilinPur/ininet-win/actions/workflows/ci.yml/badge.svg)](https://github.com/SkilinPur/ininet-win/actions/workflows/ci.yml)
+
 Windows build of the **ininet** network tool: a **network scanner + live connection monitor**.
 
 `ininet-win` answers two questions:
@@ -122,6 +124,10 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 
 Then double-click `ininet-win.exe` (starts the TUI) or call subcommands, e.g.
 `ininet-win.exe scan 192.168.0.0/24`.
+
+Official builds are produced by CI: pushing a tag like `v0.1.0` builds the
+`.exe` from source on `windows-latest` and attaches it to a GitHub Release
+(see `.github/workflows/release.yml`).
 
 ---
 

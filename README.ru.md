@@ -1,5 +1,7 @@
 # ininet-win
 
+[![CI](https://github.com/SkilinPur/ininet-win/actions/workflows/ci.yml/badge.svg)](https://github.com/SkilinPur/ininet-win/actions/workflows/ci.yml)
+
 Windows-сборка сетевого инструмента **ininet**: **сканер сети + живой монитор соединений**.
 
 `ininet-win` отвечает на два вопроса:
@@ -122,6 +124,10 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 
 Затем двойной клик по `ininet-win.exe` (открывает TUI) или подкоманды, напр.
 `ininet-win.exe scan 192.168.0.0/24`.
+
+Официальные сборки делает CI: пуш тега вида `v0.1.0` собирает `.exe` из
+исходников на `windows-latest` и прикладывает к GitHub Release
+(см. `.github/workflows/release.yml`).
 
 ---
 
