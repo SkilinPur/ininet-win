@@ -25,6 +25,16 @@ def _help(key: str) -> str:
     return t(key)
 
 
+def _default_network() -> str:
+    """Best-effort default target network (first local subnet)."""
+    try:
+        from ininet_win.platform.ifaces import get_interfaces
+    except ImportError:  # pragma: no cover - platform layer always present
+        return ""
+    interfaces = get_interfaces()
+    return interfaces[0].network if interfaces else ""
+
+
 def _build_app() -> typer.Typer:
     app = typer.Typer(
         name="ininet-win",
@@ -341,6 +351,42 @@ def _register_commands(app: typer.Typer) -> None:
                     f"[dim]{t('unresolved.warning', count=unresolved)}[/dim]"
                 )
 
+    @app.command()
+    def topology(
+        network: str = typer.Option(
+            "", "--network", "-n", help=_help("opt.network.help")
+        ),
+        ports: str = typer.Option("1-1024", "--ports", "-p", help=_help("opt.ports.help")),
+        timeout: float = typer.Option(1.0, "--timeout", "-t", help=_help("opt.timeout.help")),
+        no_scan: bool = typer.Option(
+            False, "--no-scan", help=_help("opt.no_scan.help")
+        ),
+        no_live: bool = typer.Option(
+            False, "--no-live", help=_help("opt.no_live.help")
+        ),
+        json_out: bool = typer.Option(False, "--json", help=_help("opt.json.help")),
+    ) -> None:
+        """Show the network topology (hosts and their links)."""
+        from ininet_win.core.monitor import get_connections
+        from ininet_win.core.scan import scan_network
+        from ininet_win.core.topology import build_topology
+        from ininet_win.render import render_topology, topology_to_json
+
+        scan = None
+        if not no_scan:
+            target = network or _default_network()
+            if not target:
+                console.print(f"[red]{t('topo.no_network')}[/red]")
+                raise typer.Exit(code=2)
+            scan = asyncio.run(scan_network(target, ports, ping_timeout=timeout))
+
+        conns = [] if no_live else get_connections()
+        topo = build_topology(scan, conns, include_live=not no_live)
+
+        if json_out:
+            console.print_json(topology_to_json(topo))
+        else:
+            render_topology(topo, console)
 
     @app.command()
     def tui(

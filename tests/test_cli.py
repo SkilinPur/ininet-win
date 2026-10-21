@@ -42,6 +42,12 @@ def test_admin_command() -> None:
     assert result.exit_code == 0
 
 
+def test_topology_no_snapshot() -> None:
+    result = runner.invoke(app, ["--lang", "en", "topology", "--no-scan", "--no-live", "--json"])
+    assert result.exit_code == 0
+    assert "\"nodes\"" in result.stdout
+
+
 def test_history_empty(tmp_path) -> None:
     db = tmp_path / "h.db"
     result = runner.invoke(app, ["history", "--db", str(db)])

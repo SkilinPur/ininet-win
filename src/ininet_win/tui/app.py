@@ -290,16 +290,50 @@ class HistoryTab(TableTab):
         self.set_rows(rows)
 
 
+class MapTab(TableTab):
+    """Network topology: nodes and their links (scan + live connections)."""
+
+    table_id = "map-table"
+
+    def column_labels(self) -> tuple[str, ...]:
+        return (
+            t("table.node"),
+            t("table.kind"),
+            t("table.mac"),
+            t("table.ports"),
+            t("table.links"),
+        )
+
+    def compose(self) -> ComposeResult:
+        with Horizontal(id="map-controls"):
+            yield Button(t("tui.refresh_btn"), id="map-refresh", variant="primary")
+        yield from self.compose_search()
+        yield from self.compose_data()
+
+    def refresh_rows(self, topo) -> None:
+        rows: list[tuple[str, ...]] = []
+        for node in topo.nodes.values():
+            neighbors = topo.neighbors(node.id)
+            ports = ", ".join(str(p) for p in node.ports) or "-"
+            links = ", ".join(
+                f"{other} ({edge.kind})" for other, edge in neighbors[:5]
+            ) or "-"
+            rows.append((node.id, node.kind, node.mac or "-", ports, links))
+        self.set_rows(rows)
+
+
 class IninetTuiApp(App):
     """The ininet-win terminal user interface."""
 
     CSS = """
     Screen { layout: vertical; }
-    #scan-controls, #top-controls, #history-controls { height: auto; padding: 1 1 0 1; }
+    #scan-controls, #top-controls, #map-controls, #history-controls {
+        height: auto; padding: 1 1 0 1;
+    }
     .ctl-label { padding: 1 1 0 0; }
     #scan-network { width: 24; }
     #scan-ports { width: 16; }
-    #scan-run, #scan-save, #top-refresh, #history-refresh { margin: 0 1; }
+    #scan-run, #scan-save, #top-refresh, #history-refresh, #map-refresh { margin: 0 1; }
     Input { margin: 1 1 0 1; }
     DataTable { height: 1fr; }
     """
@@ -309,7 +343,8 @@ class IninetTuiApp(App):
         ("1", "show_tab('scan')", "Scan"),
         ("2", "show_tab('watch')", "Watch"),
         ("3", "show_tab('top')", "Top"),
-        ("4", "show_tab('history')", "History"),
+        ("4", "show_tab('map')", "Map"),
+        ("5", "show_tab('history')", "History"),
         ("r", "refresh_current", "Refresh"),
         ("/", "focus_search", "Search"),
     ]
@@ -328,6 +363,8 @@ class IninetTuiApp(App):
                 yield WatchTab()
             with TabPane(t("tui.top"), id="top"):
                 yield TopTab()
+            with TabPane(t("tui.map"), id="map"):
+                yield MapTab()
             with TabPane(t("tui.history"), id="history"):
                 yield HistoryTab()
         yield Static(t("tui.status_idle"), id="status")
@@ -397,10 +434,21 @@ class IninetTuiApp(App):
             database.close()
         self.query_one(HistoryTab).refresh_rows(snapshots)
 
+    def refresh_map(self) -> None:
+        from ininet_win.core.monitor import get_connections
+        from ininet_win.core.topology import build_topology
+
+        scan = self.query_one(ScanTab).last_result
+        conns = get_connections()
+        topo = build_topology(scan, conns)
+        self.query_one(MapTab).refresh_rows(topo)
+
     def action_show_tab(self, tab_id: str) -> None:
         self.query_one(TabbedContent).active = tab_id
         if tab_id == "top":
             self.refresh_top()
+        elif tab_id == "map":
+            self.refresh_map()
         elif tab_id == "history":
             self.refresh_history()
 
@@ -410,6 +458,8 @@ class IninetTuiApp(App):
             self._tick_watch()
         elif active == "top":
             self.refresh_top()
+        elif active == "map":
+            self.refresh_map()
         elif active == "history":
             self.refresh_history()
 
@@ -420,6 +470,8 @@ class IninetTuiApp(App):
             self.save_scan()
         elif event.button.id == "top-refresh":
             self.refresh_top()
+        elif event.button.id == "map-refresh":
+            self.refresh_map()
         elif event.button.id == "history-refresh":
             self.refresh_history()
 

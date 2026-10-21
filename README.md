@@ -57,7 +57,12 @@ ininet-win watch --json          # one-shot JSON snapshot
 # top processes by connection count
 ininet-win top -l 20
 
-# interactive terminal UI (Scan / Watch / Top / History)
+# network topology (hosts and their links)
+ininet-win topology                 # scan first subnet + live connections
+ininet-win topology -n 10.0.0.0/24  # explicit network
+ininet-win topology --no-live       # scan results only
+
+# interactive terminal UI (Scan / Watch / Top / Map / History)
 ininet-win tui
 
 # privilege check / relaunch with UAC
@@ -75,6 +80,8 @@ ininet-win history --prune 20   # keep only the latest 20
 `--no-ports`, `--banners`, `--banner-timeout`, `--json`, `--save`, `--db`.
 `watch` options: `--interval/-i`, `--count/-n`, `--process`, `--port`, `--host`,
 `--status`, `--connected`, `--json`, `--elevate`.
+`topology` options: `--network/-n`, `--ports/-p`, `--timeout/-t`, `--no-scan`,
+`--no-live`, `--json`.
 `tui` options: `--interval/-i`.
 The TUI needs the optional extra: `pip install "ininet-win[tui]"`.
 

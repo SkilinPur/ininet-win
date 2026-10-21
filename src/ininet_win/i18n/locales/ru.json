@@ -22,6 +22,7 @@
   "cmd.top.help": "Топ процессов по числу соединений.",
   "cmd.lang.help": "Показать или сменить язык интерфейса.",
   "cmd.tui.help": "Запустить интерактивный терминальный интерфейс (Scan / Watch / Top / History).",
+  "cmd.topology.help": "Показать топологию сети (хосты и их связи).",
 
   "opt.network.help": "Целевая сеть в CIDR, например 192.168.0.0/24",
   "opt.ports.help": "Диапазон портов, например 1-1024",
@@ -29,6 +30,8 @@
   "opt.port_timeout.help": "Таймаут порта (секунды)",
   "opt.jobs.help": "Параллелизм ping",
   "opt.no_ports.help": "Только обнаружение хостов",
+  "opt.no_scan.help": "Без скана, только живые соединения",
+  "opt.no_live.help": "Без живых соединений, только результаты скана",
   "opt.banners.help": "Считывать баннеры сервисов с открытых портов",
   "opt.banner_timeout.help": "Таймаут баннера (секунды)",
   "opt.json.help": "Вывод в JSON",
@@ -59,6 +62,10 @@
   "unresolved.warning": "{count} соединений без процесса — запустите с --elevate для резолва",
 
   "diff.no_changes": "Изменений нет.",
+  "topo.title": "Топология",
+  "topo.links": "связ(ей)",
+  "topo.empty": "Нечего показать.",
+  "topo.no_network": "Не найдена целевая сеть; укажите --network.",
   "diff.added_hosts": "+ хосты:",
   "diff.removed_hosts": "- хосты:",
 
@@ -89,6 +96,9 @@
   "table.created": "Создан",
   "table.hosts": "Хосты",
   "table.open_ports": "Откр. порты",
+  "table.node": "Узел",
+  "table.kind": "Тип",
+  "table.links": "Связи",
 
   "lang.set": "Язык: {lang}",
   "lang.changed": "Язык изменён на: {lang}",
@@ -99,6 +109,7 @@
   "tui.watch": "Watch",
   "tui.top": "Top",
   "tui.history": "History",
+  "tui.map": "Карта",
   "tui.quit": "q выход",
   "tui.network": "Сеть",
   "tui.ports": "Порты",

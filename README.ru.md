@@ -57,7 +57,12 @@ ininet-win watch --json          # разовый снимок в JSON
 # топ процессов по числу соединений
 ininet-win top -l 20
 
-# интерактивный терминальный интерфейс (Scan / Watch / Top / History)
+# топология сети (хосты и их связи)
+ininet-win topology                 # скан первой подсети + живые соединения
+ininet-win topology -n 10.0.0.0/24  # явная сеть
+ininet-win topology --no-live       # только результаты скана
+
+# интерактивный терминальный интерфейс (Scan / Watch / Top / Map / History)
 ininet-win tui
 
 # проверка прав / перезапуск с UAC
@@ -75,6 +80,8 @@ ininet-win history --prune 20   # оставить только 20 послед�
 `--no-ports`, `--banners`, `--banner-timeout`, `--json`, `--save`, `--db`.
 Опции `watch`: `--interval/-i`, `--count/-n`, `--process`, `--port`, `--host`,
 `--status`, `--connected`, `--json`, `--elevate`.
+Опции `topology`: `--network/-n`, `--ports/-p`, `--timeout/-t`, `--no-scan`,
+`--no-live`, `--json`.
 Опции `tui`: `--interval/-i`.
 TUI требует необязательный extra: `pip install "ininet-win[tui]"`.
 

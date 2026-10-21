@@ -180,3 +180,92 @@ def render_diff(diff, console: Console | None = None) -> None:
         if change.removed_ports:
             parts.append(f"[red]-{','.join(map(str, change.removed_ports))}[/red]")
         console.print(f"  {change.ip}: {' '.join(parts)}")
+
+
+def render_topology(topo, console: Console | None = None) -> None:
+    """Print a network topology as an ASCII tree from its root nodes."""
+    console = console or Console()
+    console.print(
+        f"[bold]{t('topo.title')}[/bold]  "
+        f"[green]{topo.node_count}[/green] {t('common.host_s')}, "
+        f"[cyan]{topo.edge_count}[/cyan] {t('topo.links')}"
+    )
+
+    if not topo.nodes:
+        console.print(f"[yellow]{t('topo.empty')}[/yellow]")
+        return
+
+    roots = topo.roots()
+    if not roots:
+        roots = list(topo.nodes)
+
+    seen: set[str] = set()
+    for index, root in enumerate(roots):
+        if root in seen:
+            continue
+        _print_branch(topo, root, "", index == len(roots) - 1, seen, console)
+
+
+def _print_branch(
+    topo, node_id: str, prefix: str, last: bool, seen: set[str], console
+) -> None:
+    node = topo.nodes[node_id]
+    connector = "└─" if last else "├─"
+    color = "green" if node.kind == "host" else "magenta"
+    detail = f"  [dim]{node.mac}[/dim]" if node.mac else ""
+    console.print(f"{prefix}{connector} [{color}]{node.label}[/{color}]{detail}")
+    seen.add(node_id)
+
+    children = [
+        (other, edge) for other, edge in topo.neighbors(node_id) if other not in seen
+    ]
+    child_prefix = prefix + ("   " if last else "│  ")
+    for index, (other, edge) in enumerate(children):
+        _print_edge(topo, other, edge, child_prefix, index == len(children) - 1, seen, console)
+
+
+def _print_edge(
+    topo, node_id: str, edge, prefix: str, last: bool, seen: set[str], console
+) -> None:
+    node = topo.nodes[node_id]
+    connector = "└─" if last else "├─"
+    color = "green" if node.kind == "host" else "magenta"
+    ports = f" [cyan]:{','.join(map(str, edge.ports))}[/cyan]" if edge.ports else ""
+    count = f" [dim]x{edge.count}[/dim]" if edge.count > 1 else ""
+    kind = f"[dim]{edge.kind}[/dim]"
+    detail = f"  [dim]{node.mac}[/dim]" if node.mac else ""
+    console.print(
+        f"{prefix}{connector} [{color}]{node.label}[/{color}]{detail} "
+        f"{kind}{ports}{count}"
+    )
+    seen.add(node_id)
+
+    children = [
+        (other, e) for other, e in topo.neighbors(node_id) if other not in seen
+    ]
+    child_prefix = prefix + ("   " if last else "│  ")
+    for index, (other, sub_edge) in enumerate(children):
+        _print_edge(
+            topo, other, sub_edge, child_prefix, index == len(children) - 1, seen, console
+        )
+
+
+def topology_to_json(topo) -> str:
+    """Serialize a topology graph to JSON."""
+    payload = {
+        "nodes": [
+            {"id": n.id, "kind": n.kind, "mac": n.mac, "ports": n.ports}
+            for n in topo.nodes.values()
+        ],
+        "edges": [
+            {
+                "src": e.src,
+                "dst": e.dst,
+                "kind": e.kind,
+                "count": e.count,
+                "ports": e.ports,
+            }
+            for e in topo.edges
+        ],
+    }
+    return json.dumps(payload, indent=2, ensure_ascii=False)
