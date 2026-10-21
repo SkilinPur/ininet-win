@@ -30,6 +30,31 @@ def version() -> None:
 
 
 @app.command()
+def admin(
+    elevate: bool = typer.Option(
+        False, "--elevate", help="Relaunch this command with UAC elevation"
+    ),
+) -> None:
+    """Show privilege status (administrator or not)."""
+    from ininet_win.platform.elevate import is_admin, relaunch_as_admin
+
+    if is_admin():
+        console.print("[green]Administrator:[/green] yes")
+        return
+
+    console.print("[yellow]Administrator:[/yellow] no")
+    console.print(
+        "[dim]Without admin rights, the owning process of connections that belong\n"
+        "to other users cannot be resolved (shown as PID 0 / empty process).[/dim]"
+    )
+    if elevate:
+        if relaunch_as_admin(["admin"]):
+            console.print("[green]Relaunching with elevation...[/green]")
+            raise typer.Exit(code=0)
+        console.print("[red]Elevation was refused or unavailable.[/red]")
+
+
+@app.command()
 def interfaces() -> None:
     """List local network interfaces and their networks."""
     from rich.table import Table
@@ -96,12 +121,22 @@ def watch(
     status: str = typer.Option("", "--status", help="Filter by connection state"),
     connected: bool = typer.Option(False, "--connected", help="Only established connections"),
     json_out: bool = typer.Option(False, "--json", help="Print a one-shot JSON snapshot and exit"),
+    elevate: bool = typer.Option(
+        False, "--elevate", help="Relaunch with UAC elevation to resolve all processes"
+    ),
 ) -> None:
     """Watch live network connections (read-only)."""
     from rich.live import Live
 
-    from ininet_win.core.monitor import Filter, get_connections
+    from ininet_win.core.monitor import Filter, get_connections, unresolved_count
+    from ininet_win.platform.elevate import is_admin, relaunch_as_admin
     from ininet_win.render import connections_to_json, render_connections
+
+    if elevate and not is_admin():
+        if relaunch_as_admin(["watch"]):
+            console.print("[green]Relaunching with elevation...[/green]")
+            raise typer.Exit(code=0)
+        console.print("[red]Elevation was refused or unavailable.[/red]")
 
     filt = Filter(
         process=process,
@@ -111,12 +146,22 @@ def watch(
         connected_only=connected,
     )
 
+    def warn_unresolved(conns) -> None:
+        unresolved = unresolved_count(conns)
+        if unresolved and not is_admin():
+            console.print(
+                f"[dim]{unresolved} connection(s) without a process — "
+                "run with --elevate to resolve[/dim]"
+            )
+
     if json_out:
         console.print_json(connections_to_json(get_connections(filt)))
         return
 
     def snapshot() -> None:
-        render_connections(get_connections(filt), console)
+        conns = get_connections(filt)
+        render_connections(conns, console)
+        warn_unresolved(conns)
 
     if count > 0:
         for _ in range(count):
@@ -131,6 +176,7 @@ def watch(
                 conns = get_connections(filt)
                 with console.capture() as capture:
                     render_connections(conns, console)
+                    warn_unresolved(conns)
                 live.update(capture.get())
                 time.sleep(interval)
     except KeyboardInterrupt:
@@ -142,13 +188,29 @@ def top(
     limit: int = typer.Option(20, "--limit", "-l", help="Show top N processes"),
     connected: bool = typer.Option(False, "--connected", help="Only established connections"),
     json_out: bool = typer.Option(False, "--json", help="Output as JSON"),
+    elevate: bool = typer.Option(
+        False, "--elevate", help="Relaunch with UAC elevation to resolve all processes"
+    ),
 ) -> None:
     """Show top processes by number of connections."""
-    from ininet_win.core.monitor import Filter, get_connections, group_by_process
+    from ininet_win.core.monitor import (
+        Filter,
+        get_connections,
+        group_by_process,
+        unresolved_count,
+    )
+    from ininet_win.platform.elevate import is_admin, relaunch_as_admin
     from ininet_win.render import render_top
 
+    if elevate and not is_admin():
+        if relaunch_as_admin(["top", "--limit", str(limit)]):
+            console.print("[green]Relaunching with elevation...[/green]")
+            raise typer.Exit(code=0)
+        console.print("[red]Elevation was refused or unavailable.[/red]")
+
     filt = Filter(connected_only=connected)
-    groups = group_by_process(get_connections(filt))
+    conns = get_connections(filt)
+    groups = group_by_process(conns)
     if json_out:
         payload = [
             {
@@ -163,6 +225,12 @@ def top(
         console.print_json(json.dumps(payload, ensure_ascii=False))
     else:
         render_top(groups, console, limit)
+        unresolved = unresolved_count(conns)
+        if unresolved and not is_admin():
+            console.print(
+                f"[dim]{unresolved} connection(s) without a process — "
+                "run with --elevate to resolve[/dim]"
+            )
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ from ininet_win.core.monitor import (
     Connection,
     Filter,
     group_by_process,
+    unresolved_count,
 )
 
 
@@ -82,3 +83,12 @@ def test_group_by_process() -> None:
     assert groups[0].remote_ports == {443, 80}
     assert groups[1].process == "svchost.exe"
     assert groups[1].count == 1
+
+
+def test_unresolved_count() -> None:
+    conns = [
+        _conn(process="chrome.exe"),
+        _conn(process="", pid=None),
+        _conn(process="", pid=0),
+    ]
+    assert unresolved_count(conns) == 2

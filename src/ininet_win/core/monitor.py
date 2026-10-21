@@ -84,8 +84,16 @@ class ProcessGroup:
     remote_ports: set[int] = field(default_factory=set)
 
 
+def unresolved_count(conns: list[Connection]) -> int:
+    """Number of connections whose owning process could not be resolved.
+
+    On Windows this usually means the process belongs to another user and the
+    current shell lacks administrator rights.
+    """
+    return sum(1 for c in conns if c.process == "")
+
+
 def group_by_process(conns: list[Connection]) -> list[ProcessGroup]:
-    """Aggregate connections per process, sorted by connection count desc."""
     groups: dict[tuple[int | None, str], ProcessGroup] = {}
     for conn in conns:
         key = (conn.pid, conn.process)

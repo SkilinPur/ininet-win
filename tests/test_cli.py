@@ -31,3 +31,8 @@ def test_watch_stub() -> None:
 def test_top_json() -> None:
     result = runner.invoke(app, ["top", "--json"])
     assert result.exit_code == 0
+
+
+def test_admin_command() -> None:
+    result = runner.invoke(app, ["admin"])
+    assert result.exit_code == 0

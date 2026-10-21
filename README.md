@@ -49,12 +49,20 @@ ininet-win watch --json          # разовый снимок в JSON
 
 # топ процессов по числу соединений
 ininet-win top -l 20
+
+# проверка прав / перезапуск с UAC
+ininet-win admin
+ininet-win admin --elevate
 ```
 
 Опции `scan`: `--ports/-p`, `--timeout/-t`, `--port-timeout`, `--jobs/-j`,
 `--no-ports`, `--json`.
 Опции `watch`: `--interval/-i`, `--count/-n`, `--process`, `--port`, `--host`,
-`--status`, `--connected`, `--json`.
+`--status`, `--connected`, `--json`, `--elevate`.
+
+> `watch`/`top` показывают процессы для всех соединений только при правах
+> администратора. Без них чужие процессы отображаются как PID 0 / пустой процесс,
+> а `--elevate` перезапускает команду через UAC.
 
 ---
 
