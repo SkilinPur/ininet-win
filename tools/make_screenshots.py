@@ -34,7 +34,7 @@ OUT = ROOT / "docs"
 
 # Terminal size (columns x rows). The SVG keeps its viewBox and scales
 # responsively to fill the container (README, browser, mobile).
-TERM_SIZE = (200, 55)
+TERM_SIZE = (220, 60)
 
 
 def _make_responsive(svg: str) -> str:
