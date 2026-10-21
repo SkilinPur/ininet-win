@@ -1,3 +1,5 @@
+import re
+
 from typer.testing import CliRunner
 
 from ininet_win import __version__
@@ -21,7 +23,8 @@ def test_scan_invalid_cidr() -> None:
 def test_scan_help() -> None:
     result = runner.invoke(app, ["scan", "--help"])
     assert result.exit_code == 0
-    assert "--ports" in result.stdout
+    flat = re.sub(r"\s+", "", re.sub(r"\x1b\[[0-9;]*m", "", result.stdout))
+    assert "--ports" in flat
 
 
 def test_watch_stub() -> None:
