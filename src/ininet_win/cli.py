@@ -125,6 +125,12 @@ def _register_commands(app: typer.Typer) -> None:
         ),
         concurrency: int = typer.Option(128, "--jobs", "-j", help=_help("opt.jobs.help")),
         no_ports: bool = typer.Option(False, "--no-ports", help=_help("opt.no_ports.help")),
+        banners: bool = typer.Option(
+            False, "--banners", help=_help("opt.banners.help")
+        ),
+        banner_timeout: float = typer.Option(
+            1.0, "--banner-timeout", help=_help("opt.banner_timeout.help")
+        ),
         json_out: bool = typer.Option(False, "--json", help=_help("opt.json.help")),
         save: bool = typer.Option(False, "--save", help=_help("opt.save.help")),
         db: str = typer.Option("", "--db", help=_help("opt.db.help")),
@@ -141,6 +147,8 @@ def _register_commands(app: typer.Typer) -> None:
                 port_timeout=port_timeout,
                 concurrency=concurrency,
                 scan_ports=not no_ports,
+                grab_banners=banners,
+                banner_timeout=banner_timeout,
             )
 
         try:

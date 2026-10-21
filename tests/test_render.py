@@ -18,7 +18,11 @@ def test_to_json() -> None:
     payload = json.loads(to_json(result))
     assert payload["network"] == "192.168.0.0/24"
     assert payload["hosts"][0]["ip"] == "192.168.0.1"
-    assert payload["hosts"][0]["ports"][0] == {"port": 80, "service": "http"}
+    assert payload["hosts"][0]["ports"][0] == {
+        "port": 80,
+        "service": "http",
+        "banner": "",
+    }
 
 
 def test_to_json_empty() -> None:

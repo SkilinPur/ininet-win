@@ -37,6 +37,11 @@ def render_table(result: ScanResult, console: Console | None = None) -> None:
         services = ", ".join(
             f"{p.port}/{p.service}" if p.service else str(p.port) for p in host.ports
         ) or "-"
+        banners = ", ".join(
+            f"{p.port}: {p.banner}" for p in host.ports if p.banner
+        )
+        if banners:
+            services = f"{services}\n{banners}"
         table.add_row(host.ip, host.mac or "-", ports, services)
 
     console.print(table)
@@ -51,7 +56,8 @@ def to_json(result: ScanResult) -> str:
                 "ip": h.ip,
                 "mac": h.mac,
                 "ports": [
-                    {"port": p.port, "service": p.service} for p in h.ports
+                    {"port": p.port, "service": p.service, "banner": p.banner}
+                    for p in h.ports
                 ],
             }
             for h in result.hosts

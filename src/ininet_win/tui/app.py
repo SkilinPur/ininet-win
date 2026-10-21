@@ -10,6 +10,7 @@ from textual.containers import Horizontal, Vertical
 from textual.theme import Theme
 from textual.widgets import (
     Button,
+    Checkbox,
     DataTable,
     Footer,
     Header,
@@ -141,7 +142,13 @@ class ScanTab(TableTab):
     table_id = "scan-table"
 
     def column_labels(self) -> tuple[str, ...]:
-        return (t("table.ip"), t("table.mac"), t("table.ports"), t("table.services"))
+        return (
+            t("table.ip"),
+            t("table.mac"),
+            t("table.ports"),
+            t("table.services"),
+            t("table.banner"),
+        )
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="scan-controls"):
@@ -150,6 +157,7 @@ class ScanTab(TableTab):
             yield Label(t("tui.ports"), classes="ctl-label")
             yield Input(placeholder="1-1024", id="scan-ports")
             yield Button(t("tui.scan_btn"), id="scan-run", variant="primary")
+            yield Checkbox(t("tui.banners"), id="scan-banners")
             yield Button(t("tui.save_btn"), id="scan-save", disabled=True)
         yield from self.compose_search()
         yield from self.compose_data()
@@ -167,7 +175,8 @@ class ScanTab(TableTab):
                 f"{p.port}/{p.service}" if p.service else str(p.port)
                 for p in host.ports
             ) or "-"
-            rows.append((host.ip, host.mac or "-", ports, services))
+            banner = "; ".join(p.banner for p in host.ports if p.banner) or "-"
+            rows.append((host.ip, host.mac or "-", ports, services, banner))
         self.set_rows(rows)
         self.query_one("#scan-save", Button).disabled = not result.hosts
 
@@ -420,6 +429,7 @@ class IninetTuiApp(App):
         scan_tab = self.query_one(ScanTab)
         network = scan_tab.query_one("#scan-network", Input).value.strip()
         ports = _ports_spec(scan_tab.query_one("#scan-ports", Input).value)
+        banners = scan_tab.query_one("#scan-banners", Checkbox).value
         if not network:
             self._set_status(t("tui.status_no_network"))
             return
@@ -427,7 +437,9 @@ class IninetTuiApp(App):
 
         def worker() -> None:
             try:
-                result = asyncio.run(scan_network(network, ports))
+                result = asyncio.run(
+                    scan_network(network, ports, grab_banners=banners)
+                )
             except Exception as exc:  # noqa: BLE001 - surface any error to the UI
                 self.call_from_thread(
                     self._set_status, t("tui.status_error", message=str(exc))

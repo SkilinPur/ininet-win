@@ -44,6 +44,9 @@ ininet-win scan 192.168.0.0/24 -p 22,80,443
 # вывод в JSON
 ininet-win scan 192.168.0.0/24 -p 1-1024 --json
 
+# чтение баннеров сервисов с открытых портов
+ininet-win scan 192.168.0.0/24 -p 22,80,443 --banners
+
 # живой монитор соединений (read-only)
 ininet-win watch
 ininet-win watch --process chrome --connected
@@ -67,7 +70,7 @@ ininet-win history --prune 20   # оставить только 20 послед�
 ```
 
 Опции `scan`: `--ports/-p`, `--timeout/-t`, `--port-timeout`, `--jobs/-j`,
-`--no-ports`, `--json`, `--save`, `--db`.
+`--no-ports`, `--banners`, `--banner-timeout`, `--json`, `--save`, `--db`.
 Опции `watch`: `--interval/-i`, `--count/-n`, `--process`, `--port`, `--host`,
 `--status`, `--connected`, `--json`, `--elevate`.
 Опции `tui`: `--interval/-i`.

@@ -74,10 +74,12 @@ class Database:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     host_id INTEGER NOT NULL REFERENCES hosts(id) ON DELETE CASCADE,
                     port INTEGER NOT NULL,
-                    service TEXT NOT NULL DEFAULT ''
+                    service TEXT NOT NULL DEFAULT '',
+                    banner TEXT NOT NULL DEFAULT ''
                 )
                 """
             )
+            self._ensure_column("ports", "banner", "TEXT NOT NULL DEFAULT ''")
             self.conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_hosts_snapshot ON hosts(snapshot_id)"
             )
@@ -87,6 +89,17 @@ class Database:
             self.conn.execute(
                 "INSERT OR REPLACE INTO meta(key, value) VALUES ('schema_version', ?)",
                 (str(SCHEMA_VERSION),),
+            )
+
+    def _ensure_column(self, table: str, column: str, definition: str) -> None:
+        """Add a column if a legacy database predates it."""
+        existing = {
+            row["name"]
+            for row in self.conn.execute(f"PRAGMA table_info({table})").fetchall()
+        }
+        if column not in existing:
+            self.conn.execute(
+                f"ALTER TABLE {table} ADD COLUMN {column} {definition}"
             )
 
     def save_scan(self, result: ScanResult) -> int:
@@ -104,8 +117,8 @@ class Database:
                 host_id = int(host_cursor.lastrowid)
                 for port in host.ports:
                     self.conn.execute(
-                        "INSERT INTO ports(host_id, port, service) VALUES (?, ?, ?)",
-                        (host_id, port.port, port.service),
+                        "INSERT INTO ports(host_id, port, service, banner) VALUES (?, ?, ?, ?)",
+                        (host_id, port.port, port.service, port.banner),
                     )
         return snapshot_id
 
@@ -149,7 +162,7 @@ class Database:
         result = ScanResult(network=snap["network"])
         for host_row in host_rows:
             port_rows = self.conn.execute(
-                "SELECT port, service FROM ports WHERE host_id = ? ORDER BY port",
+                "SELECT port, service, banner FROM ports WHERE host_id = ? ORDER BY port",
                 (host_row["id"],),
             ).fetchall()
             result.hosts.append(
@@ -157,7 +170,11 @@ class Database:
                     ip=host_row["ip"],
                     mac=host_row["mac"],
                     ports=[
-                        PortResult(port=p["port"], service=p["service"])
+                        PortResult(
+                            port=p["port"],
+                            service=p["service"],
+                            banner=p["banner"] or "",
+                        )
                         for p in port_rows
                     ],
                 )
