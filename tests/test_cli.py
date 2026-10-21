@@ -12,6 +12,17 @@ def test_version() -> None:
     assert __version__ in result.stdout
 
 
-def test_scan_stub() -> None:
-    result = runner.invoke(app, ["scan", "192.168.0.0/24"])
+def test_scan_invalid_cidr() -> None:
+    result = runner.invoke(app, ["scan", "not-a-network"])
+    assert result.exit_code == 2
+
+
+def test_scan_help() -> None:
+    result = runner.invoke(app, ["scan", "--help"])
+    assert result.exit_code == 0
+    assert "--ports" in result.stdout
+
+
+def test_watch_stub() -> None:
+    result = runner.invoke(app, ["watch"])
     assert result.exit_code == 0
