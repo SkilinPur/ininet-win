@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 
 from textual.app import App, ComposeResult
 from textual.containers import Horizontal, Vertical
@@ -18,6 +19,7 @@ from textual.widgets import (
     TabbedContent,
     TabPane,
 )
+from textual.widgets.data_table import CellDoesNotExist
 
 from ininet_win.i18n.translator import current_language, t
 from ininet_win.language import resolve_language
@@ -43,8 +45,103 @@ def _ports_spec(input_text: str) -> str:
     return input_text.strip() or "1-1024"
 
 
-class ScanTab(Vertical):
+def _sort_key(value: str):
+    """Sort IPs numerically, then numbers, then everything else case-insensitively."""
+    text = value.strip()
+    host = text.split(":")[0].split("/")[0]
+    try:
+        return (0, int(ipaddress.ip_address(host)))
+    except ValueError:
+        pass
+    if text.isdigit():
+        return (0, int(text))
+    try:
+        return (0, float(text))
+    except ValueError:
+        return (1, text.lower())
+
+
+class TableTab(Vertical):
+    """Base tab: a searchable, sortable DataTable.
+
+    Subclasses add columns and supply rows; this class handles filtering
+    (substring over the whole row) and sorting (click a column header).
+    """
+
+    table_id: str = "table"
+
+    def compose_search(self) -> ComposeResult:
+        yield Input(placeholder=t("tui.search"), id=f"{self.table_id}-search")
+
+    def compose_data(self) -> ComposeResult:
+        yield DataTable(id=self.table_id, zebra_stripes=True, cursor_type="row")
+
+    def on_mount(self) -> None:
+        self._rows: list[tuple[str, ...]] = []
+        self._search = ""
+        self._sort_col: int | None = None
+        self._sort_desc = False
+        table = self.query_one(f"#{self.table_id}", DataTable)
+        table.add_columns(*self.column_labels())
+
+    def column_labels(self) -> tuple[str, ...]:
+        raise NotImplementedError
+
+    def set_rows(self, rows: list[tuple[str, ...]]) -> None:
+        self._rows = rows
+        self._redraw()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        if event.input.id == f"{self.table_id}-search":
+            self._search = event.value.strip().lower()
+            self._redraw()
+
+    def on_data_table_header_selected(
+        self, event: DataTable.HeaderSelected
+    ) -> None:
+        col = event.column_index
+        if self._sort_col == col:
+            self._sort_desc = not self._sort_desc
+        else:
+            self._sort_col = col
+            self._sort_desc = False
+        self._redraw()
+
+    def _view_rows(self) -> list[tuple[str, ...]]:
+        rows = self._rows
+        if self._search:
+            rows = [
+                row
+                for row in rows
+                if any(self._search in cell.lower() for cell in row)
+            ]
+        if self._sort_col is not None and 0 <= self._sort_col < len(
+            self.column_labels()
+        ):
+            rows = sorted(
+                rows,
+                key=lambda r: _sort_key(r[self._sort_col]),
+                reverse=self._sort_desc,
+            )
+        return rows
+
+    def _redraw(self) -> None:
+        table = self.query_one(f"#{self.table_id}", DataTable)
+        try:
+            table.clear()
+        except CellDoesNotExist:  # pragma: no cover - defensive
+            pass
+        for row in self._view_rows():
+            table.add_row(*row)
+
+
+class ScanTab(TableTab):
     """Scan a network and show live hosts with open ports."""
+
+    table_id = "scan-table"
+
+    def column_labels(self) -> tuple[str, ...]:
+        return (t("table.ip"), t("table.mac"), t("table.ports"), t("table.services"))
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="scan-controls"):
@@ -54,26 +151,24 @@ class ScanTab(Vertical):
             yield Input(placeholder="1-1024", id="scan-ports")
             yield Button(t("tui.scan_btn"), id="scan-run", variant="primary")
             yield Button(t("tui.save_btn"), id="scan-save", disabled=True)
-        yield DataTable(id="scan-table", zebra_stripes=True)
+        yield from self.compose_search()
+        yield from self.compose_data()
 
     def on_mount(self) -> None:
-        table = self.query_one("#scan-table", DataTable)
-        table.add_columns(
-            t("table.ip"), t("table.mac"), t("table.ports"), t("table.services")
-        )
+        super().on_mount()
         self._last_result = None
 
     def set_result(self, result) -> None:
         self._last_result = result
-        table = self.query_one("#scan-table", DataTable)
-        table.clear()
+        rows: list[tuple[str, ...]] = []
         for host in result.hosts:
             ports = ", ".join(str(p.port) for p in host.ports) or "-"
             services = ", ".join(
                 f"{p.port}/{p.service}" if p.service else str(p.port)
                 for p in host.ports
             ) or "-"
-            table.add_row(host.ip, host.mac or "-", ports, services)
+            rows.append((host.ip, host.mac or "-", ports, services))
+        self.set_rows(rows)
         self.query_one("#scan-save", Button).disabled = not result.hosts
 
     @property
@@ -81,16 +176,13 @@ class ScanTab(Vertical):
         return self._last_result
 
 
-class WatchTab(Vertical):
+class WatchTab(TableTab):
     """Live connection monitor with an auto-refresh timer."""
 
-    def compose(self) -> ComposeResult:
-        yield Input(placeholder=t("tui.filter"), id="watch-filter")
-        yield DataTable(id="watch-table", zebra_stripes=True)
+    table_id = "watch-table"
 
-    def on_mount(self) -> None:
-        table = self.query_one("#watch-table", DataTable)
-        table.add_columns(
+    def column_labels(self) -> tuple[str, ...]:
+        return (
             t("table.proto"),
             t("table.local"),
             t("table.remote"),
@@ -99,11 +191,13 @@ class WatchTab(Vertical):
             t("table.process"),
         )
 
+    def compose(self) -> ComposeResult:
+        yield from self.compose_search()
+        yield from self.compose_data()
+
     def refresh_rows(self, conns) -> None:
-        table = self.query_one("#watch-table", DataTable)
-        table.clear()
-        for conn in conns:
-            table.add_row(
+        rows = [
+            (
                 conn.proto,
                 conn.local or "-",
                 conn.remote or "-",
@@ -111,20 +205,18 @@ class WatchTab(Vertical):
                 str(conn.pid) if conn.pid is not None else "-",
                 conn.process or "-",
             )
+            for conn in conns
+        ]
+        self.set_rows(rows)
 
 
-class TopTab(Vertical):
+class TopTab(TableTab):
     """Top processes by number of connections."""
 
-    def compose(self) -> ComposeResult:
-        with Horizontal(id="top-controls"):
-            yield Label(t("tui.refresh_btn"), classes="ctl-label")
-            yield Button(t("tui.refresh_btn"), id="top-refresh", variant="primary")
-        yield DataTable(id="top-table", zebra_stripes=True)
+    table_id = "top-table"
 
-    def on_mount(self) -> None:
-        table = self.query_one("#top-table", DataTable)
-        table.add_columns(
+    def column_labels(self) -> tuple[str, ...]:
+        return (
             t("table.count"),
             t("table.pid"),
             t("table.process"),
@@ -132,32 +224,36 @@ class TopTab(Vertical):
             t("table.remote_ports"),
         )
 
+    def compose(self) -> ComposeResult:
+        with Horizontal(id="top-controls"):
+            yield Button(t("tui.refresh_btn"), id="top-refresh", variant="primary")
+        yield from self.compose_search()
+        yield from self.compose_data()
+
     def refresh_rows(self, groups, limit: int = 50) -> None:
-        table = self.query_one("#top-table", DataTable)
-        table.clear()
+        rows: list[tuple[str, ...]] = []
         for group in groups[:limit]:
             hosts = str(len(group.remote_hosts)) if group.remote_hosts else "0"
             ports = ", ".join(str(p) for p in sorted(group.remote_ports)) or "-"
-            table.add_row(
-                str(group.count),
-                str(group.pid) if group.pid is not None else "-",
-                group.process or "-",
-                hosts,
-                ports,
+            rows.append(
+                (
+                    str(group.count),
+                    str(group.pid) if group.pid is not None else "-",
+                    group.process or "-",
+                    hosts,
+                    ports,
+                )
             )
+        self.set_rows(rows)
 
 
-class HistoryTab(Vertical):
+class HistoryTab(TableTab):
     """Saved scan snapshots."""
 
-    def compose(self) -> ComposeResult:
-        with Horizontal(id="history-controls"):
-            yield Button(t("tui.refresh_btn"), id="history-refresh", variant="primary")
-        yield DataTable(id="history-table", zebra_stripes=True)
+    table_id = "history-table"
 
-    def on_mount(self) -> None:
-        table = self.query_one("#history-table", DataTable)
-        table.add_columns(
+    def column_labels(self) -> tuple[str, ...]:
+        return (
             t("table.id"),
             t("table.created"),
             t("table.network"),
@@ -165,17 +261,24 @@ class HistoryTab(Vertical):
             t("table.open_ports"),
         )
 
+    def compose(self) -> ComposeResult:
+        with Horizontal(id="history-controls"):
+            yield Button(t("tui.refresh_btn"), id="history-refresh", variant="primary")
+        yield from self.compose_search()
+        yield from self.compose_data()
+
     def refresh_rows(self, snapshots) -> None:
-        table = self.query_one("#history-table", DataTable)
-        table.clear()
-        for snap in snapshots:
-            table.add_row(
+        rows = [
+            (
                 str(snap.id),
                 snap.created_at,
                 snap.network,
                 str(snap.host_count),
                 str(snap.open_port_count),
             )
+            for snap in snapshots
+        ]
+        self.set_rows(rows)
 
 
 class IninetTuiApp(App):
@@ -188,7 +291,7 @@ class IninetTuiApp(App):
     #scan-network { width: 24; }
     #scan-ports { width: 16; }
     #scan-run, #scan-save, #top-refresh, #history-refresh { margin: 0 1; }
-    #watch-filter { margin: 1 1 0 1; }
+    Input { margin: 1 1 0 1; }
     DataTable { height: 1fr; }
     """
 
@@ -199,6 +302,7 @@ class IninetTuiApp(App):
         ("3", "show_tab('top')", "Top"),
         ("4", "show_tab('history')", "History"),
         ("r", "refresh_current", "Refresh"),
+        ("/", "focus_search", "Search"),
     ]
 
     def __init__(self, *, watch_interval: float = 2.0, **kwargs) -> None:
@@ -244,15 +348,19 @@ class IninetTuiApp(App):
     def _set_status(self, message: str) -> None:
         self.query_one("#status", Static).update(message)
 
+    def _current_tab(self):
+        tab_id = self.query_one(TabbedContent).active
+        return self.query_one(f"#{tab_id}").query_one(TableTab)
+
+    def action_focus_search(self) -> None:
+        tab = self._current_tab()
+        tab.query_one(Input).focus()
+
     def _tick_watch(self) -> None:
         from ininet_win.core.monitor import Filter, get_connections, unresolved_count
 
         watch_tab = self.query_one(WatchTab)
-        try:
-            text = watch_tab.query_one("#watch-filter", Input).value
-        except Exception:
-            text = ""
-        conns = get_connections(Filter(process=text))
+        conns = get_connections(Filter())
         watch_tab.refresh_rows(conns)
         unresolved = unresolved_count(conns)
         if unresolved:
@@ -321,7 +429,9 @@ class IninetTuiApp(App):
             try:
                 result = asyncio.run(scan_network(network, ports))
             except Exception as exc:  # noqa: BLE001 - surface any error to the UI
-                self.call_from_thread(self._set_status, t("tui.status_error", message=str(exc)))
+                self.call_from_thread(
+                    self._set_status, t("tui.status_error", message=str(exc))
+                )
                 return
             self.call_from_thread(self._scan_done, result)
 

@@ -110,6 +110,7 @@
   "tui.status_watching": "Наблюдение за соединениями.",
   "tui.status_error": "Ошибка: {message}",
   "tui.filter": "Фильтр",
+  "tui.search": "Поиск…",
   "tui.language": "Язык",
   "tui.no_textual": "TUI требует пакет 'textual': pip install \"ininet-win[tui]\""
 }

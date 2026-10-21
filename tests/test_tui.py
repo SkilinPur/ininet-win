@@ -104,3 +104,81 @@ async def test_history_refresh(monkeypatch, tmp_path) -> None:
         table = app.query_one("#history-table")
         assert table.row_count == 1
         await pilot.press("q")
+
+
+def _scan_rows():
+    return [
+        ("10.0.0.9", "-", "80", "80/http"),
+        ("10.0.0.1", "-", "22", "22/ssh"),
+        ("10.0.0.22", "-", "443", "443/https"),
+    ]
+
+
+async def test_scan_search_filters_rows() -> None:
+    app = IninetTuiApp()
+    async with app.run_test() as pilot:
+        tab = app.query_one("ScanTab")
+        tab.set_rows(_scan_rows())
+        await pilot.pause()
+        tab._search = "443"
+        tab._redraw()
+        await pilot.pause()
+        assert app.query_one("#scan-table").row_count == 1
+        await pilot.press("q")
+
+
+async def test_scan_search_via_input() -> None:
+    app = IninetTuiApp()
+    async with app.run_test() as pilot:
+        tab = app.query_one("ScanTab")
+        tab.set_rows(_scan_rows())
+        search = app.query_one("#scan-table-search")
+        search.value = "10.0.0.9"
+        await pilot.pause()
+        assert app.query_one("#scan-table").row_count == 1
+        await pilot.press("q")
+
+
+async def test_scan_sort_by_ip_numeric() -> None:
+    app = IninetTuiApp()
+    async with app.run_test() as pilot:
+        tab = app.query_one("ScanTab")
+        tab.set_rows(_scan_rows())
+        await pilot.pause()
+        tab._sort_col = 0
+        tab._sort_desc = False
+        tab._redraw()
+        await pilot.pause()
+        table = app.query_one("#scan-table")
+        ips = [table.get_row_at(i)[0] for i in range(table.row_count)]
+        assert ips == ["10.0.0.1", "10.0.0.9", "10.0.0.22"]
+        tab._sort_desc = True
+        tab._redraw()
+        await pilot.pause()
+        ips = [table.get_row_at(i)[0] for i in range(table.row_count)]
+        assert ips == ["10.0.0.22", "10.0.0.9", "10.0.0.1"]
+        await pilot.press("q")
+
+
+async def test_scan_sort_by_port_column() -> None:
+    app = IninetTuiApp()
+    async with app.run_test() as pilot:
+        tab = app.query_one("ScanTab")
+        tab.set_rows(_scan_rows())
+        await pilot.pause()
+        tab._sort_col = 3
+        tab._redraw()
+        await pilot.pause()
+        table = app.query_one("#scan-table")
+        services = [table.get_row_at(i)[3] for i in range(table.row_count)]
+        assert services == ["22/ssh", "443/https", "80/http"]
+        await pilot.press("q")
+
+
+async def test_slash_focuses_search() -> None:
+    app = IninetTuiApp()
+    async with app.run_test() as pilot:
+        await pilot.press("/")
+        focused = app.focused
+        assert focused is not None and focused.id == "scan-table-search"
+        await pilot.press("q")

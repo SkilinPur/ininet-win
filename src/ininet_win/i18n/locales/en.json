@@ -109,6 +109,7 @@
   "tui.status_watching": "Watching live connections.",
   "tui.status_error": "Error: {message}",
   "tui.filter": "Filter",
+  "tui.search": "Search…",
   "tui.language": "Language",
   "tui.no_textual": "TUI requires the 'textual' package: pip install \"ininet-win[tui]\""
 }
