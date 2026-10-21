@@ -36,3 +36,15 @@ def test_top_json() -> None:
 def test_admin_command() -> None:
     result = runner.invoke(app, ["admin"])
     assert result.exit_code == 0
+
+
+def test_history_empty(tmp_path) -> None:
+    db = tmp_path / "h.db"
+    result = runner.invoke(app, ["history", "--db", str(db)])
+    assert result.exit_code == 0
+
+
+def test_diff_missing_snapshot(tmp_path) -> None:
+    db = tmp_path / "d.db"
+    result = runner.invoke(app, ["diff", "1", "2", "--db", str(db)])
+    assert result.exit_code == 2

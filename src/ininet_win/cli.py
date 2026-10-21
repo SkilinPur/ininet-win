@@ -84,6 +84,8 @@ def scan(
     concurrency: int = typer.Option(128, "--jobs", "-j", help="Ping concurrency"),
     no_ports: bool = typer.Option(False, "--no-ports", help="Discover hosts only"),
     json_out: bool = typer.Option(False, "--json", help="Output as JSON"),
+    save: bool = typer.Option(False, "--save", help="Save results to history (SQLite)"),
+    db: str = typer.Option("", "--db", help="Path to the history database"),
 ) -> None:
     """Scan a network for live hosts and open ports."""
     from ininet_win.core.scan import scan_network
@@ -109,6 +111,86 @@ def scan(
         console.print_json(to_json(result))
     else:
         render_table(result, console)
+
+    if save:
+        from ininet_win.storage.db import Database
+
+        database = Database(db or None)
+        try:
+            snapshot_id = database.save_scan(result)
+        finally:
+            database.close()
+        console.print(f"[dim]saved as snapshot #{snapshot_id}[/dim]")
+
+
+@app.command()
+def history(
+    limit: int = typer.Option(50, "--limit", "-l", help="Show latest N snapshots"),
+    prune: int = typer.Option(0, "--prune", help="Delete all but the latest N snapshots"),
+    db: str = typer.Option("", "--db", help="Path to the history database"),
+) -> None:
+    """List saved scan snapshots."""
+    from ininet_win.render import render_history
+    from ininet_win.storage.db import Database
+
+    database = Database(db or None)
+    try:
+        if prune > 0:
+            removed = database.prune(keep=prune)
+            console.print(f"[dim]pruned {removed} snapshot(s)[/dim]")
+        render_history(database.list_snapshots(limit), console)
+    finally:
+        database.close()
+
+
+@app.command()
+def diff(
+    old_id: int = typer.Argument(..., help="Older snapshot id"),
+    new_id: int = typer.Argument(..., help="Newer snapshot id"),
+    json_out: bool = typer.Option(False, "--json", help="Output as JSON"),
+    db: str = typer.Option("", "--db", help="Path to the history database"),
+) -> None:
+    """Compare two saved scans: what changed between them."""
+    from ininet_win.core.diff import diff_scans
+    from ininet_win.render import render_diff
+    from ininet_win.storage.db import Database
+
+    database = Database(db or None)
+    try:
+        old = database.get_snapshot(old_id)
+        new = database.get_snapshot(new_id)
+    finally:
+        database.close()
+
+    if old is None:
+        console.print(f"[red]error:[/red] snapshot #{old_id} not found")
+        raise typer.Exit(code=2)
+    if new is None:
+        console.print(f"[red]error:[/red] snapshot #{new_id} not found")
+        raise typer.Exit(code=2)
+
+    result = diff_scans(old, new)
+    if json_out:
+        console.print_json(json.dumps(_diff_payload(result), ensure_ascii=False))
+    else:
+        render_diff(result, console)
+
+
+def _diff_payload(result) -> dict:
+    return {
+        "old_network": result.old_network,
+        "new_network": result.new_network,
+        "added_hosts": result.added_hosts,
+        "removed_hosts": result.removed_hosts,
+        "changed_hosts": [
+            {
+                "ip": c.ip,
+                "added_ports": c.added_ports,
+                "removed_ports": c.removed_ports,
+            }
+            for c in result.changed_hosts
+        ],
+    }
 
 
 @app.command()

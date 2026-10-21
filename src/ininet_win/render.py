@@ -127,3 +127,49 @@ def connections_to_json(conns: list[Connection]) -> str:
         for c in conns
     ]
     return json.dumps(payload, indent=2, ensure_ascii=False)
+
+
+def render_history(snapshots, console: Console | None = None) -> None:
+    """Print a table of saved scan snapshots."""
+    console = console or Console()
+    if not snapshots:
+        console.print("[yellow]No saved scans.[/yellow]")
+        return
+
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column("ID", justify="right", style="cyan", no_wrap=True)
+    table.add_column("Created", style="dim", no_wrap=True)
+    table.add_column("Network", style="green", no_wrap=True)
+    table.add_column("Hosts", justify="right", style="white")
+    table.add_column("Open ports", justify="right", style="yellow")
+
+    for snap in snapshots:
+        table.add_row(
+            str(snap.id),
+            snap.created_at,
+            snap.network,
+            str(snap.host_count),
+            str(snap.open_port_count),
+        )
+    console.print(table)
+
+
+def render_diff(diff, console: Console | None = None) -> None:
+    """Print a scan-to-scan diff."""
+    console = console or Console()
+    console.print(f"[bold]Diff[/bold] {diff.old_network} -> {diff.new_network}")
+    if not diff.has_changes:
+        console.print("[green]No changes.[/green]")
+        return
+
+    if diff.added_hosts:
+        console.print(f"[green]+ hosts:[/green] {', '.join(diff.added_hosts)}")
+    if diff.removed_hosts:
+        console.print(f"[red]- hosts:[/red] {', '.join(diff.removed_hosts)}")
+    for change in diff.changed_hosts:
+        parts = []
+        if change.added_ports:
+            parts.append(f"[green]+{','.join(map(str, change.added_ports))}[/green]")
+        if change.removed_ports:
+            parts.append(f"[red]-{','.join(map(str, change.removed_ports))}[/red]")
+        console.print(f"  {change.ip}: {' '.join(parts)}")

@@ -53,10 +53,16 @@ ininet-win top -l 20
 # проверка прав / перезапуск с UAC
 ininet-win admin
 ininet-win admin --elevate
+
+# история сканов и дифф изменений
+ininet-win scan 192.168.0.0/24 --save
+ininet-win history
+ininet-win diff 1 2
+ininet-win history --prune 20   # оставить только 20 последних
 ```
 
 Опции `scan`: `--ports/-p`, `--timeout/-t`, `--port-timeout`, `--jobs/-j`,
-`--no-ports`, `--json`.
+`--no-ports`, `--json`, `--save`, `--db`.
 Опции `watch`: `--interval/-i`, `--count/-n`, `--process`, `--port`, `--host`,
 `--status`, `--connected`, `--json`, `--elevate`.
 
