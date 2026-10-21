@@ -389,6 +389,66 @@ def _register_commands(app: typer.Typer) -> None:
             render_topology(topo, console)
 
     @app.command()
+    def traffic(
+        interval: float = typer.Option(
+            1.0, "--interval", "-i", help=_help("opt.interval.help")
+        ),
+        count: int = typer.Option(
+            0, "--count", "-n", help=_help("opt.count.help")
+        ),
+        all_ifaces: bool = typer.Option(
+            False, "--all", help=_help("opt.all_ifaces.help")
+        ),
+        json_out: bool = typer.Option(False, "--json", help=_help("opt.json.help")),
+    ) -> None:
+        """Show per-interface traffic volume and rate (light mode)."""
+        from ininet_win.core.traffic import TrafficSnapshot, is_noise
+        from ininet_win.render import render_traffic
+
+        def collect(previous):
+            snap = TrafficSnapshot.capture()
+            items = list(snap.rates(previous).values())
+            if not all_ifaces:
+                items = [i for i in items if not is_noise(i.name)]
+            items.sort(key=lambda i: i.total, reverse=True)
+            return snap, items
+
+        def emit(items) -> None:
+            if json_out:
+                payload = [
+                    {
+                        "interface": i.name,
+                        "bytes_recv": i.bytes_recv,
+                        "bytes_sent": i.bytes_sent,
+                        "recv_bps": i.recv_bps,
+                        "send_bps": i.send_bps,
+                    }
+                    for i in items
+                ]
+                console.print_json(json.dumps(payload, ensure_ascii=False))
+            else:
+                render_traffic(items, console)
+
+        prev, items = collect(None)
+        time.sleep(interval)
+        prev, items = collect(prev)
+        emit(items)
+
+        if count == 1:
+            return
+        remaining = count - 1 if count > 0 else 0
+        try:
+            while remaining != 0:
+                time.sleep(interval)
+                prev, items = collect(prev)
+                console.clear()
+                emit(items)
+                if remaining > 0:
+                    remaining -= 1
+        except KeyboardInterrupt:
+            console.print(f"[dim]{t('common.stopped')}[/dim]")
+
+    @app.command()
     def tui(
         interval: float = typer.Option(
             2.0, "--interval", "-i", help=_help("opt.interval.help")

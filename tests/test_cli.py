@@ -48,6 +48,21 @@ def test_topology_no_snapshot() -> None:
     assert "\"nodes\"" in result.stdout
 
 
+def test_traffic_snapshot_json(monkeypatch) -> None:
+    from ininet_win.core import traffic as traffic_mod
+
+    monkeypatch.setattr(
+        traffic_mod,
+        "interface_counters",
+        lambda: {"Ethernet": {"bytes_sent": 10, "bytes_recv": 20}},
+    )
+    result = runner.invoke(
+        app, ["--lang", "en", "traffic", "--count", "1", "--interval", "0.05", "--json"]
+    )
+    assert result.exit_code == 0
+    assert "Ethernet" in result.stdout
+
+
 def test_history_empty(tmp_path) -> None:
     db = tmp_path / "h.db"
     result = runner.invoke(app, ["history", "--db", str(db)])

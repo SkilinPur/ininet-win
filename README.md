@@ -62,7 +62,12 @@ ininet-win topology                 # scan first subnet + live connections
 ininet-win topology -n 10.0.0.0/24  # explicit network
 ininet-win topology --no-live       # scan results only
 
-# interactive terminal UI (Scan / Watch / Top / Map / History)
+# per-interface traffic volume and rate (light mode, no driver)
+ininet-win traffic                  # one sample with rates
+ininet-win traffic -i 2 -n 5        # 5 samples every 2s (live)
+ininet-win traffic --all --json     # include virtual interfaces, JSON
+
+# interactive terminal UI (Scan / Watch / Top / Traffic / Map / History)
 ininet-win tui
 
 # privilege check / relaunch with UAC
@@ -82,6 +87,9 @@ ininet-win history --prune 20   # keep only the latest 20
 `--status`, `--connected`, `--json`, `--elevate`.
 `topology` options: `--network/-n`, `--ports/-p`, `--timeout/-t`, `--no-scan`,
 `--no-live`, `--json`.
+`traffic` options: `--interval/-i`, `--count/-n`, `--all`, `--json`.
+Volume is per network interface (OS counters) — not per connection. Per-connection
+volume would require ETW or a packet-capture driver (not included).
 `tui` options: `--interval/-i`.
 The TUI needs the optional extra: `pip install "ininet-win[tui]"`.
 

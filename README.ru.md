@@ -62,7 +62,12 @@ ininet-win topology                 # скан первой подсети + ж�
 ininet-win topology -n 10.0.0.0/24  # явная сеть
 ininet-win topology --no-live       # только результаты скана
 
-# интерактивный терминальный интерфейс (Scan / Watch / Top / Map / History)
+# объём и скорость трафика по интерфейсам (лёгкий режим, без драйвера)
+ininet-win traffic                  # один замер со скоростью
+ininet-win traffic -i 2 -n 5        # 5 замеров каждые 2с (live)
+ininet-win traffic --all --json     # включая виртуальные интерфейсы, JSON
+
+# интерактивный терминальный интерфейс (Scan / Watch / Top / Traffic / Map / History)
 ininet-win tui
 
 # проверка прав / перезапуск с UAC
@@ -82,6 +87,9 @@ ininet-win history --prune 20   # оставить только 20 послед�
 `--status`, `--connected`, `--json`, `--elevate`.
 Опции `topology`: `--network/-n`, `--ports/-p`, `--timeout/-t`, `--no-scan`,
 `--no-live`, `--json`.
+Опции `traffic`: `--interval/-i`, `--count/-n`, `--all`, `--json`.
+Объём считается по сетевым интерфейсам (счётчики ОС) — не по соединениям.
+Для объёма по соединениям нужен ETW или драйвер захвата пакетов (не входит).
 Опции `tui`: `--interval/-i`.
 TUI требует необязательный extra: `pip install "ininet-win[tui]"`.
 

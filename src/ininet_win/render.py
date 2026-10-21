@@ -269,3 +269,26 @@ def topology_to_json(topo) -> str:
         ],
     }
     return json.dumps(payload, indent=2, ensure_ascii=False)
+
+
+def render_traffic(traffic, console: Console | None = None) -> None:
+    """Print per-interface traffic volume and rates as a rich table."""
+    from ininet_win.core.traffic import format_bytes, format_rate
+
+    console = console or Console()
+    table = Table(show_header=True, header_style="bold magenta")
+    table.add_column(t("table.interface"), style="green", no_wrap=True)
+    table.add_column(t("table.recv"), justify="right")
+    table.add_column(t("table.sent"), justify="right")
+    table.add_column(t("table.recv_rate"), justify="right")
+    table.add_column(t("table.send_rate"), justify="right")
+
+    for item in traffic:
+        table.add_row(
+            item.name,
+            format_bytes(item.bytes_recv),
+            format_bytes(item.bytes_sent),
+            format_rate(item.recv_bps),
+            format_rate(item.send_bps),
+        )
+    console.print(table)

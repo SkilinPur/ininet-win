@@ -15,7 +15,7 @@ async def test_app_mounts_with_five_tabs() -> None:
     app = IninetTuiApp()
     async with app.run_test() as pilot:
         tabs = [pane.id for pane in app.query("TabPane")]
-        assert tabs == ["scan", "watch", "top", "map", "history"]
+        assert tabs == ["scan", "watch", "top", "traffic", "map", "history"]
         await pilot.press("q")
 
 
@@ -25,8 +25,10 @@ async def test_tab_switch_by_digit() -> None:
         await pilot.press("3")
         assert app.query_one("TabbedContent").active == "top"
         await pilot.press("4")
-        assert app.query_one("TabbedContent").active == "map"
+        assert app.query_one("TabbedContent").active == "traffic"
         await pilot.press("5")
+        assert app.query_one("TabbedContent").active == "map"
+        await pilot.press("6")
         assert app.query_one("TabbedContent").active == "history"
         await pilot.press("q")
 

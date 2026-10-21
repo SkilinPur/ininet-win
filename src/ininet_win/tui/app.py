@@ -290,9 +290,44 @@ class HistoryTab(TableTab):
         self.set_rows(rows)
 
 
+class TrafficTab(TableTab):
+    """Per-interface traffic volume and rate."""
+
+    table_id = "traffic-table"
+
+    def column_labels(self) -> tuple[str, ...]:
+        return (
+            t("table.interface"),
+            t("table.recv"),
+            t("table.sent"),
+            t("table.recv_rate"),
+            t("table.send_rate"),
+        )
+
+    def compose(self) -> ComposeResult:
+        with Horizontal(id="traffic-controls"):
+            yield Button(t("tui.refresh_btn"), id="traffic-refresh", variant="primary")
+        yield from self.compose_search()
+        yield from self.compose_data()
+
+    def refresh_rows(self, items) -> None:
+        from ininet_win.core.traffic import format_bytes, format_rate
+
+        rows = [
+            (
+                item.name,
+                format_bytes(item.bytes_recv),
+                format_bytes(item.bytes_sent),
+                format_rate(item.recv_bps),
+                format_rate(item.send_bps),
+            )
+            for item in items
+        ]
+        self.set_rows(rows)
+
+
 class MapTab(TableTab):
     """Network topology: nodes and their links (scan + live connections)."""
-
     table_id = "map-table"
 
     def column_labels(self) -> tuple[str, ...]:
@@ -327,13 +362,14 @@ class IninetTuiApp(App):
 
     CSS = """
     Screen { layout: vertical; }
-    #scan-controls, #top-controls, #map-controls, #history-controls {
+    #scan-controls, #top-controls, #traffic-controls, #map-controls, #history-controls {
         height: auto; padding: 1 1 0 1;
     }
     .ctl-label { padding: 1 1 0 0; }
     #scan-network { width: 24; }
     #scan-ports { width: 16; }
-    #scan-run, #scan-save, #top-refresh, #history-refresh, #map-refresh { margin: 0 1; }
+    #scan-run, #scan-save, #top-refresh, #traffic-refresh, #map-refresh,
+    #history-refresh { margin: 0 1; }
     Input { margin: 1 1 0 1; }
     DataTable { height: 1fr; }
     """
@@ -343,8 +379,9 @@ class IninetTuiApp(App):
         ("1", "show_tab('scan')", "Scan"),
         ("2", "show_tab('watch')", "Watch"),
         ("3", "show_tab('top')", "Top"),
-        ("4", "show_tab('map')", "Map"),
-        ("5", "show_tab('history')", "History"),
+        ("4", "show_tab('traffic')", "Traffic"),
+        ("5", "show_tab('map')", "Map"),
+        ("6", "show_tab('history')", "History"),
         ("r", "refresh_current", "Refresh"),
         ("/", "focus_search", "Search"),
     ]
@@ -363,6 +400,8 @@ class IninetTuiApp(App):
                 yield WatchTab()
             with TabPane(t("tui.top"), id="top"):
                 yield TopTab()
+            with TabPane(t("tui.traffic"), id="traffic"):
+                yield TrafficTab()
             with TabPane(t("tui.map"), id="map"):
                 yield MapTab()
             with TabPane(t("tui.history"), id="history"):
@@ -443,10 +482,26 @@ class IninetTuiApp(App):
         topo = build_topology(scan, conns)
         self.query_one(MapTab).refresh_rows(topo)
 
+    def refresh_traffic(self) -> None:
+        from ininet_win.core.traffic import TrafficSnapshot, is_noise
+
+        previous = getattr(self, "_traffic_snapshot", None)
+        snap = TrafficSnapshot.capture()
+        items = [
+            item
+            for name, item in snap.rates(previous).items()
+            if not is_noise(name)
+        ]
+        items.sort(key=lambda i: i.total, reverse=True)
+        self._traffic_snapshot = snap
+        self.query_one(TrafficTab).refresh_rows(items)
+
     def action_show_tab(self, tab_id: str) -> None:
         self.query_one(TabbedContent).active = tab_id
         if tab_id == "top":
             self.refresh_top()
+        elif tab_id == "traffic":
+            self.refresh_traffic()
         elif tab_id == "map":
             self.refresh_map()
         elif tab_id == "history":
@@ -458,6 +513,8 @@ class IninetTuiApp(App):
             self._tick_watch()
         elif active == "top":
             self.refresh_top()
+        elif active == "traffic":
+            self.refresh_traffic()
         elif active == "map":
             self.refresh_map()
         elif active == "history":
@@ -470,6 +527,8 @@ class IninetTuiApp(App):
             self.save_scan()
         elif event.button.id == "top-refresh":
             self.refresh_top()
+        elif event.button.id == "traffic-refresh":
+            self.refresh_traffic()
         elif event.button.id == "map-refresh":
             self.refresh_map()
         elif event.button.id == "history-refresh":
