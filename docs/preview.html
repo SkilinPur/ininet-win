@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ininet-win — превью проекта</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --panel: #101010;
+    --term: #121212;
+    --border: #262626;
+    --red: #e63946;
+    --green: #7ee787;
+    --cyan: #56d4dd;
+    --yellow: #e3b341;
+    --magenta: #d2a8ff;
+    --dim: #9a9a9a;
+    --text: #e8e8e8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Cascadia Code", "Consolas", "JetBrains Mono", monospace;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  header {
+    padding: 28px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: var(--red);
+    letter-spacing: 0.5px;
+  }
+  header .sub { color: var(--dim); }
+  header .badge {
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: var(--dim);
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 32px 80px; }
+  .nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .nav button {
+    background: #141414;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .nav button:hover { color: var(--text); border-color: #444; }
+  .nav button.active {
+    color: #0a0a0a;
+    background: var(--red);
+    border-color: var(--red);
+    font-weight: 600;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; animation: fade 0.2s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px);} to {opacity:1;transform:none;} }
+  .desc { color: var(--dim); margin: 0 0 14px; }
+  .desc code { color: var(--cyan); }
+  .window {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--term);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .titlebar {
+    background: #1a1a1a;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot.r { background: #ff5f56; } .dot.y { background: #ffbd2e; } .dot.g { background: #27c93f; }
+  .titlebar .path { margin-left: 10px; color: var(--dim); font-size: 12px; }
+  pre.term {
+    margin: 0;
+    padding: 18px 20px;
+    overflow-x: auto;
+    white-space: pre;
+    font-size: 13px;
+  }
+  .c-red { color: var(--red); font-weight: 600; }
+  .c-green { color: var(--green); }
+  .c-cyan { color: var(--cyan); }
+  .c-yellow { color: var(--yellow); }
+  .c-magenta { color: var(--magenta); }
+  .c-dim { color: var(--dim); }
+  .c-white { color: var(--text); font-weight: 600; }
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: #161616;
+    font-size: 13px;
+  }
+  .tabs span {
+    padding: 8px 18px;
+    color: var(--dim);
+    border-right: 1px solid var(--border);
+  }
+  .tabs span.sel {
+    color: var(--red);
+    background: var(--term);
+    border-bottom: 2px solid var(--red);
+    font-weight: 600;
+  }
+  .legend {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .legend .item {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .legend .item b { color: var(--red); display: block; margin-bottom: 4px; }
+  .legend .item span { color: var(--dim); font-size: 12.5px; }
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 32px;
+    text-align: center;
+    color: var(--dim);
+    font-size: 12.5px;
+  }
+  footer .brand { color: var(--red); font-weight: 600; }
+  .langswitch {
+    margin-left: auto;
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .langswitch button {
+    background: #141414;
+    border: none;
+    color: var(--dim);
+    padding: 5px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    transition: all 0.15s;
+  }
+  .langswitch button:hover { color: var(--text); }
+  .langswitch button.active {
+    color: #0a0a0a;
+    background: var(--red);
+    font-weight: 600;
+  }
+  /* language visibility: elements carry only-en / only-ru */
+  body[data-lang="en"] .only-ru { display: none !important; }
+  body[data-lang="ru"] .only-en { display: none !important; }
+</style>
+</head>
+<body data-lang="ru">
+<header>
+  <h1>ininet-win</h1>
+  <span class="sub">
+    <span class="only-en">project preview · network scanner &amp; connection monitor</span>
+    <span class="only-ru">превью готового проекта · network scanner &amp; connection monitor</span>
+  </span>
+  <span class="badge">Windows</span>
+  <span class="badge">TUI + CLI</span>
+  <div class="langswitch">
+    <button type="button" data-lang-btn="en">EN</button>
+    <button type="button" data-lang-btn="ru" class="active">RU</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="nav">
+    <button class="active" data-t="scan">scan</button>
+    <button data-t="watch">watch</button>
+    <button data-t="top">top</button>
+    <button data-t="history">history</button>
+    <button data-t="diff">diff</button>
+    <button data-t="tui">TUI</button>
+    <button data-t="help">--help</button>
+  </div>
+
+  <!-- SCAN -->
+  <section class="screen active" id="scan">
+    <p class="desc only-en">Network scan: live hosts + ports. <code>ininet-win scan 10.0.0.0/24 -p 22,80,443</code></p>
+    <p class="desc only-ru">Сканирование сети: живые хосты + порты. <code>ininet-win scan 10.0.0.0/24 -p 22,80,443</code></p>
+    <div class="window">
+      <div class="titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="path">Windows Terminal — ininet-win</span></div>
+      <pre class="term only-en"><span class="c-dim">&gt;</span> ininet-win scan 10.0.0.0/24 -p 22,80,443
+
+<span class="c-white">Network</span> 10.0.0.0/24  <span class="c-green">7</span> host(s), <span class="c-cyan">5</span> open port(s)
+<span class="c-magenta">┌───────────────┬───────────────────┬────────────┬──────────────────────────┐</span>
+<span class="c-magenta">│ IP            │ MAC               │ Ports      │ Services                 │</span>
+<span class="c-magenta">├───────────────┼───────────────────┼────────────┼──────────────────────────┤</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.1</span>      <span class="c-magenta">│</span> <span class="c-dim">02-00-00-00-00-01</span> <span class="c-magenta">│</span> <span class="c-cyan">22, 53, 80</span> <span class="c-magenta">│</span> 22/ssh, 53/dns, 80/http  <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.9</span>      <span class="c-magenta">│</span> <span class="c-dim">02-00-00-00-00-09</span> <span class="c-magenta">│</span> <span class="c-cyan">80, 443</span>    <span class="c-magenta">│</span> 80/http, 443/https       <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.12</span>     <span class="c-magenta">│</span> <span class="c-dim">02-00-00-00-00-0C</span> <span class="c-magenta">│</span> <span class="c-cyan">-</span>          <span class="c-magenta">│</span> -                        <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.22</span>     <span class="c-magenta">│</span> <span class="c-dim">02-00-00-00-00-16</span> <span class="c-magenta">│</span> <span class="c-cyan">443</span>        <span class="c-magenta">│</span> 443/https                <span class="c-magenta">│</span>
+<span class="c-magenta">└───────────────┴───────────────────┴────────────┴──────────────────────────┘</span></pre>
+      <pre class="term only-ru"><span class="c-dim">&gt;</span> ininet-win scan 10.0.0.0/24 -p 22,80,443
+
+<span class="c-white">Сеть</span> 10.0.0.0/24  <span class="c-green">7</span> хост(ов), <span class="c-cyan">5</span> открытых порт(ов)
+<span class="c-magenta">┌───────────────┬───────────────────┬────────────┬──────────────────────────┐</span>
+<span class="c-magenta">│ IP            │ MAC               │ Порты      │ Сервисы                  │</span>
+<span class="c-magenta">├───────────────┼───────────────────┼────────────┼──────────────────────────┤</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.1</span>      <span class="c-magenta">│</span> <span class="c-dim">02-00-00-00-00-01</span> <span class="c-magenta">│</span> <span class="c-cyan">22, 53, 80</span> <span class="c-magenta">│</span> 22/ssh, 53/dns, 80/http  <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.9</span>      <span class="c-magenta">│</span> <span class="c-dim">02-00-00-00-00-09</span> <span class="c-magenta">│</span> <span class="c-cyan">80, 443</span>    <span class="c-magenta">│</span> 80/http, 443/https       <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.12</span>     <span class="c-magenta">│</span> <span class="c-dim">02-00-00-00-00-0C</span> <span class="c-magenta">│</span> <span class="c-cyan">-</span>          <span class="c-magenta">│</span> -                        <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.22</span>     <span class="c-magenta">│</span> <span class="c-dim">02-00-00-00-00-16</span> <span class="c-magenta">│</span> <span class="c-cyan">443</span>        <span class="c-magenta">│</span> 443/https                <span class="c-magenta">│</span>
+<span class="c-magenta">└───────────────┴───────────────────┴────────────┴──────────────────────────┘</span></pre>
+    </div>
+  </section>
+
+  <!-- WATCH -->
+  <section class="screen" id="watch">
+    <p class="desc only-en">Live connection monitor (read-only, breaks nothing). <code>ininet-win watch --connected --process chrome</code></p>
+    <p class="desc only-ru">Живой монитор соединений (read-only, ничего не рвёт). <code>ininet-win watch --connected --process chrome</code></p>
+    <div class="window">
+      <div class="titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="path">Windows Terminal — live</span></div>
+      <pre class="term only-en"><span class="c-dim">&gt;</span> ininet-win watch --connected
+
+<span class="c-magenta">┌───────┬───────────────────────┬──────────────────────┬─────────────┬───────┬──────────────┐</span>
+<span class="c-magenta">│ Proto │ Local                 │ Remote               │ State       │   PID │ Process      │</span>
+<span class="c-magenta">├───────┼───────────────────────┼──────────────────────┼─────────────┼───────┼──────────────┤</span>
+<span class="c-magenta">│</span> <span class="c-dim">tcp</span>   <span class="c-magenta">│</span> <span class="c-cyan">10.0.0.5:61864</span>      <span class="c-magenta">│</span> <span class="c-green">203.0.113.10:443</span>   <span class="c-magenta">│</span> <span class="c-yellow">ESTABLISHED</span> <span class="c-magenta">│</span> <span class="c-dim">2044</span>  <span class="c-magenta">│</span> browser.exe  <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-dim">tcp</span>   <span class="c-magenta">│</span> <span class="c-cyan">10.0.0.5:55758</span>      <span class="c-magenta">│</span> <span class="c-green">198.51.100.4:443</span>   <span class="c-magenta">│</span> <span class="c-yellow">ESTABLISHED</span> <span class="c-magenta">│</span> <span class="c-dim">12880</span> <span class="c-magenta">│</span> app.exe      <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-dim">tcp</span>   <span class="c-magenta">│</span> <span class="c-cyan">0.0.0.0:135</span>          <span class="c-magenta">│</span> <span class="c-green">-</span>                   <span class="c-magenta">│</span> <span class="c-yellow">LISTEN</span>      <span class="c-magenta">│</span> <span class="c-dim">4</span>     <span class="c-magenta">│</span> System       <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-dim">tcp</span>   <span class="c-magenta">│</span> <span class="c-cyan">127.0.0.1:57550</span>      <span class="c-magenta">│</span> <span class="c-green">127.0.0.1:49338</span>     <span class="c-magenta">│</span> <span class="c-yellow">ESTABLISHED</span> <span class="c-magenta">│</span> <span class="c-dim">6696</span>  <span class="c-magenta">│</span> svchost.exe  <span class="c-magenta">│</span>
+<span class="c-magenta">└───────┴───────────────────────┴──────────────────────┴─────────────┴───────┴──────────────┘</span>
+<span class="c-dim">8 connection(s) without a process — run with --elevate to resolve</span></pre>
+      <pre class="term only-ru"><span class="c-dim">&gt;</span> ininet-win watch --connected
+
+<span class="c-magenta">┌───────┬───────────────────────┬──────────────────────┬─────────────┬───────┬──────────────┐</span>
+<span class="c-magenta">│ Прото │ Локальный             │ Удалённый            │ Состояние   │   PID │ Процесс      │</span>
+<span class="c-magenta">├───────┼───────────────────────┼──────────────────────┼─────────────┼───────┼──────────────┤</span>
+<span class="c-magenta">│</span> <span class="c-dim">tcp</span>   <span class="c-magenta">│</span> <span class="c-cyan">10.0.0.5:61864</span>      <span class="c-magenta">│</span> <span class="c-green">203.0.113.10:443</span>   <span class="c-magenta">│</span> <span class="c-yellow">ESTABLISHED</span> <span class="c-magenta">│</span> <span class="c-dim">2044</span>  <span class="c-magenta">│</span> browser.exe  <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-dim">tcp</span>   <span class="c-magenta">│</span> <span class="c-cyan">10.0.0.5:55758</span>      <span class="c-magenta">│</span> <span class="c-green">198.51.100.4:443</span>   <span class="c-magenta">│</span> <span class="c-yellow">ESTABLISHED</span> <span class="c-magenta">│</span> <span class="c-dim">12880</span> <span class="c-magenta">│</span> app.exe      <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-dim">tcp</span>   <span class="c-magenta">│</span> <span class="c-cyan">0.0.0.0:135</span>          <span class="c-magenta">│</span> <span class="c-green">-</span>                   <span class="c-magenta">│</span> <span class="c-yellow">LISTEN</span>      <span class="c-magenta">│</span> <span class="c-dim">4</span>     <span class="c-magenta">│</span> System       <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-dim">tcp</span>   <span class="c-magenta">│</span> <span class="c-cyan">127.0.0.1:57550</span>      <span class="c-magenta">│</span> <span class="c-green">127.0.0.1:49338</span>     <span class="c-magenta">│</span> <span class="c-yellow">ESTABLISHED</span> <span class="c-magenta">│</span> <span class="c-dim">6696</span>  <span class="c-magenta">│</span> svchost.exe  <span class="c-magenta">│</span>
+<span class="c-magenta">└───────┴───────────────────────┴──────────────────────┴─────────────┴───────┴──────────────┘</span>
+<span class="c-dim">8 соединений без процесса — запустите с --elevate для резолва</span></pre>
+    </div>
+  </section>
+
+  <!-- TOP -->
+  <section class="screen" id="top">
+    <p class="desc only-en">Top processes by number of connections. <code>ininet-win top -l 10</code></p>
+    <p class="desc only-ru">Топ процессов по числу соединений. <code>ininet-win top -l 10</code></p>
+    <div class="window">
+      <div class="titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="path">Windows Terminal — ininet-win top</span></div>
+      <pre class="term only-en"><span class="c-dim">&gt;</span> ininet-win top -l 10
+
+<span class="c-magenta">┌───────┬───────┬───────────────────┬──────────────┬──────────────────────┐</span>
+<span class="c-magenta">│ Count │   PID │ Process           │ Remote hosts │ Remote ports         │</span>
+<span class="c-magenta">├───────┼───────┼───────────────────┼──────────────┼──────────────────────┤</span>
+<span class="c-magenta">│</span> <span class="c-cyan">   26</span> <span class="c-magenta">│</span> <span class="c-dim">    0</span> <span class="c-magenta">│</span> <span class="c-dim">-                </span> <span class="c-magenta">│</span> <span class="c-green">           5</span> <span class="c-magenta">│</span> <span class="c-yellow">53, 443, 51070, ...  </span> <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-cyan">   20</span> <span class="c-magenta">│</span> <span class="c-dim"> 6696</span> <span class="c-magenta">│</span> svchost.exe       <span class="c-magenta">│</span> <span class="c-green">           0</span> <span class="c-magenta">│</span> <span class="c-yellow">-                    </span> <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-cyan">   15</span> <span class="c-magenta">│</span> <span class="c-dim"> 5816</span> <span class="c-magenta">│</span> worker.exe        <span class="c-magenta">│</span> <span class="c-green">           2</span> <span class="c-magenta">│</span> <span class="c-yellow">443, 63923, ...      </span> <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-cyan">   10</span> <span class="c-magenta">│</span> <span class="c-dim"> 2044</span> <span class="c-magenta">│</span> app.exe           <span class="c-magenta">│</span> <span class="c-green">           2</span> <span class="c-magenta">│</span> <span class="c-yellow">27021, 55755, 55756  </span> <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-cyan">   10</span> <span class="c-magenta">│</span> <span class="c-dim">12880</span> <span class="c-magenta">│</span> browser.exe       <span class="c-magenta">│</span> <span class="c-green">           8</span> <span class="c-magenta">│</span> <span class="c-yellow">443                  </span> <span class="c-magenta">│</span>
+<span class="c-magenta">└───────┴───────┴───────────────────┴──────────────┴──────────────────────┘</span></pre>
+      <pre class="term only-ru"><span class="c-dim">&gt;</span> ininet-win top -l 10
+
+<span class="c-magenta">┌───────┬───────┬───────────────────┬──────────────┬──────────────────────┐</span>
+<span class="c-magenta">│ Кол-во│   PID │ Процесс           │ Удал. хосты  │ Удал. порты          │</span>
+<span class="c-magenta">├───────┼───────┼───────────────────┼──────────────┼──────────────────────┤</span>
+<span class="c-magenta">│</span> <span class="c-cyan">   26</span> <span class="c-magenta">│</span> <span class="c-dim">    0</span> <span class="c-magenta">│</span> <span class="c-dim">-                </span> <span class="c-magenta">│</span> <span class="c-green">           5</span> <span class="c-magenta">│</span> <span class="c-yellow">53, 443, 51070, ...  </span> <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-cyan">   20</span> <span class="c-magenta">│</span> <span class="c-dim"> 6696</span> <span class="c-magenta">│</span> svchost.exe       <span class="c-magenta">│</span> <span class="c-green">           0</span> <span class="c-magenta">│</span> <span class="c-yellow">-                    </span> <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-cyan">   15</span> <span class="c-magenta">│</span> <span class="c-dim"> 5816</span> <span class="c-magenta">│</span> worker.exe        <span class="c-magenta">│</span> <span class="c-green">           2</span> <span class="c-magenta">│</span> <span class="c-yellow">443, 63923, ...      </span> <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-cyan">   10</span> <span class="c-magenta">│</span> <span class="c-dim"> 2044</span> <span class="c-magenta">│</span> app.exe           <span class="c-magenta">│</span> <span class="c-green">           2</span> <span class="c-magenta">│</span> <span class="c-yellow">27021, 55755, 55756  </span> <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-cyan">   10</span> <span class="c-magenta">│</span> <span class="c-dim">12880</span> <span class="c-magenta">│</span> browser.exe       <span class="c-magenta">│</span> <span class="c-green">           8</span> <span class="c-magenta">│</span> <span class="c-yellow">443                  </span> <span class="c-magenta">│</span>
+<span class="c-magenta">└───────┴───────┴───────────────────┴──────────────┴──────────────────────┘</span></pre>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="screen" id="history">
+    <p class="desc only-en">Scan history. <code>ininet-win history</code></p>
+    <p class="desc only-ru">История сканов. <code>ininet-win history</code></p>
+    <div class="window">
+      <div class="titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="path">Windows Terminal — ininet-win history</span></div>
+      <pre class="term only-en"><span class="c-dim">&gt;</span> ininet-win history
+
+<span class="c-magenta">┌────┬─────────────────────┬─────────────────┬───────┬────────────┐</span>
+<span class="c-magenta">│ ID │ Created             │ Network         │ Hosts │ Open ports │</span>
+<span class="c-magenta">├────┼─────────────────────┼─────────────────┼───────┼────────────┤</span>
+<span class="c-magenta">│</span> <span class="c-cyan">  3</span> <span class="c-magenta">│</span> <span class="c-dim">2026-01-15 14:41:02</span> <span class="c-magenta">│</span> <span class="c-green">10.0.0.0/24    </span> <span class="c-magenta">│</span> <span class="c-white">    7</span> <span class="c-magenta">│</span> <span class="c-yellow">         5</span> <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-cyan">  2</span> <span class="c-magenta">│</span> <span class="c-dim">2026-01-15 14:31:14</span> <span class="c-magenta">│</span> <span class="c-green">10.0.0.0/24    </span> <span class="c-magenta">│</span> <span class="c-white">    6</span> <span class="c-magenta">│</span> <span class="c-yellow">         4</span> <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-cyan">  1</span> <span class="c-magenta">│</span> <span class="c-dim">2026-01-15 14:08:47</span> <span class="c-magenta">│</span> <span class="c-green">10.0.0.0/24    </span> <span class="c-magenta">│</span> <span class="c-white">    6</span> <span class="c-magenta">│</span> <span class="c-yellow">         4</span> <span class="c-magenta">│</span>
+<span class="c-magenta">└────┴─────────────────────┴─────────────────┴───────┴────────────┘</span></pre>
+      <pre class="term only-ru"><span class="c-dim">&gt;</span> ininet-win history
+
+<span class="c-magenta">┌────┬─────────────────────┬─────────────────┬───────┬────────────┐</span>
+<span class="c-magenta">│ ID │ Создан              │ Сеть            │ Хосты │ Откр. порты│</span>
+<span class="c-magenta">├────┼─────────────────────┼─────────────────┼───────┼────────────┤</span>
+<span class="c-magenta">│</span> <span class="c-cyan">  3</span> <span class="c-magenta">│</span> <span class="c-dim">2026-01-15 14:41:02</span> <span class="c-magenta">│</span> <span class="c-green">10.0.0.0/24    </span> <span class="c-magenta">│</span> <span class="c-white">    7</span> <span class="c-magenta">│</span> <span class="c-yellow">         5</span> <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-cyan">  2</span> <span class="c-magenta">│</span> <span class="c-dim">2026-01-15 14:31:14</span> <span class="c-magenta">│</span> <span class="c-green">10.0.0.0/24    </span> <span class="c-magenta">│</span> <span class="c-white">    6</span> <span class="c-magenta">│</span> <span class="c-yellow">         4</span> <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-cyan">  1</span> <span class="c-magenta">│</span> <span class="c-dim">2026-01-15 14:08:47</span> <span class="c-magenta">│</span> <span class="c-green">10.0.0.0/24    </span> <span class="c-magenta">│</span> <span class="c-white">    6</span> <span class="c-magenta">│</span> <span class="c-yellow">         4</span> <span class="c-magenta">│</span>
+<span class="c-magenta">└────┴─────────────────────┴─────────────────┴───────┴────────────┘</span></pre>
+    </div>
+  </section>
+
+  <!-- DIFF -->
+  <section class="screen" id="diff">
+    <p class="desc only-en">What changed between two scans. <code>ininet-win diff 2 3</code></p>
+    <p class="desc only-ru">Что изменилось между двумя сканами. <code>ininet-win diff 2 3</code></p>
+    <div class="window">
+      <div class="titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="path">Windows Terminal — ininet-win diff</span></div>
+      <pre class="term only-en"><span class="c-dim">&gt;</span> ininet-win diff 2 3
+
+<span class="c-white">Diff</span> 10.0.0.0/24 -&gt; 10.0.0.0/24
+<span class="c-green">+ hosts:</span> 10.0.0.223
+<span class="c-red">- hosts:</span> 10.0.0.55
+  10.0.0.9: <span class="c-green">+8080</span> <span class="c-red">-443</span>
+  10.0.0.22: <span class="c-green">+6379</span></pre>
+      <pre class="term only-ru"><span class="c-dim">&gt;</span> ininet-win diff 2 3
+
+<span class="c-white">Diff</span> 10.0.0.0/24 -&gt; 10.0.0.0/24
+<span class="c-green">+ хосты:</span> 10.0.0.223
+<span class="c-red">- хосты:</span> 10.0.0.55
+  10.0.0.9: <span class="c-green">+8080</span> <span class="c-red">-443</span>
+  10.0.0.22: <span class="c-green">+6379</span></pre>
+    </div>
+  </section>
+
+  <!-- TUI -->
+  <section class="screen" id="tui">
+    <p class="desc only-en">Interactive TUI (run with no arguments): <code>ininet-win</code></p>
+    <p class="desc only-ru">Интерактивный TUI (запуск без аргументов): <code>ininet-win</code></p>
+    <div class="window">
+      <div class="titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="path">Windows Terminal — ininet-win (TUI, textual)</span></div>
+      <div class="tabs">
+        <span class="sel">Scan</span><span>Watch</span><span>Top</span><span>History</span>
+        <span style="flex:1;border:none"></span><span style="border:none" class="c-dim only-en">q quit</span><span style="border:none" class="c-dim only-ru">q выход</span>
+      </div>
+      <pre class="term only-en"><span class="c-white">ininet-win</span>  <span class="c-dim">network scanner &amp; connection monitor</span>
+
+<span class="c-magenta">┌─ Scan ──────────────────────────────────────────────────────────────────┐</span>
+<span class="c-magenta">│</span> network: <span class="c-cyan">10.0.0.0/24</span>   ports: <span class="c-cyan">top-1000</span>   <span class="c-dim">[enter] scan  [s] save</span>     <span class="c-magenta">│</span>
+<span class="c-magenta">├─────────────────────────────────────────────────────────────────────────┤</span>
+<span class="c-magenta">│</span> <span class="c-magenta">IP            MAC                Ports       Services</span>                  <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.1</span>      02-00-00-00-00-01  22,53,80    ssh,dns,http   <span class="c-dim">▸</span>          <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.9</span>      02-00-00-00-00-09  80,443      http,https                <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.22</span>     02-00-00-00-00-16  443,6379    https,redis               <span class="c-magenta">│</span>
+<span class="c-magenta">└─────────────────────────────────────────────────────────────────────────┘</span>
+
+<span class="c-dim">↑↓ move · enter select · s save · / filter · tab switch · q quit</span></pre>
+      <pre class="term only-ru"><span class="c-white">ininet-win</span>  <span class="c-dim">сканер сети &amp; монитор соединений</span>
+
+<span class="c-magenta">┌─ Scan ──────────────────────────────────────────────────────────────────┐</span>
+<span class="c-magenta">│</span> сеть: <span class="c-cyan">10.0.0.0/24</span>   порты: <span class="c-cyan">top-1000</span>   <span class="c-dim">[enter] скан  [s] сохранить</span><span class="c-magenta">│</span>
+<span class="c-magenta">├─────────────────────────────────────────────────────────────────────────┤</span>
+<span class="c-magenta">│</span> <span class="c-magenta">IP            MAC                Порты       Сервисы</span>                   <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.1</span>      02-00-00-00-00-01  22,53,80    ssh,dns,http   <span class="c-dim">▸</span>          <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.9</span>      02-00-00-00-00-09  80,443      http,https                <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> <span class="c-green">10.0.0.22</span>     02-00-00-00-00-16  443,6379    https,redis               <span class="c-magenta">│</span>
+<span class="c-magenta">└─────────────────────────────────────────────────────────────────────────┘</span>
+
+<span class="c-dim">↑↓ навигация · enter выбрать · s сохранить · / фильтр · tab переключить · q выход</span></pre>
+    </div>
+    <div class="legend">
+      <div class="item"><b>Scan</b><span class="only-en">network overview: hosts, ports, services</span><span class="only-ru">обзор сети: хосты, порты, сервисы</span></div>
+      <div class="item"><b>Watch</b><span class="only-en">live connections with processes</span><span class="only-ru">живые соединения с процессами</span></div>
+      <div class="item"><b>Top</b><span class="only-en">top processes by connections</span><span class="only-ru">топ процессов по соединениям</span></div>
+      <div class="item"><b>History</b><span class="only-en">saved scans and diffs</span><span class="only-ru">сохранённые сканы и диффы</span></div>
+    </div>
+  </section>
+
+  <!-- HELP -->
+  <section class="screen" id="help">
+    <p class="desc only-en">Command list. <code>ininet-win --help</code></p>
+    <p class="desc only-ru">Список команд. <code>ininet-win --help</code></p>
+    <div class="window">
+      <div class="titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="path">Windows Terminal — ininet-win --help</span></div>
+      <pre class="term only-en"><span class="c-red"> Usage: ininet-win [OPTIONS] COMMAND [ARGS]...</span>
+
+ Network scanner &amp; live connection monitor (Windows).
+
+<span class="c-magenta">┌─ Commands ──────────────────────────────────────────────────────────────┐</span>
+<span class="c-magenta">│</span> version     Show the ininet-win version.                                <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> admin       Show privilege status (administrator or not).               <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> interfaces  List local network interfaces and their networks.           <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> scan        Scan a network for live hosts and open ports.               <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> history     List saved scan snapshots.                                  <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> diff        Compare two saved scans: what changed between them.         <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> watch       Watch live network connections (read-only).                 <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> top         Show top processes by number of connections.                <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> lang        Show or change the interface language.                      <span class="c-magenta">│</span>
+<span class="c-magenta">└─────────────────────────────────────────────────────────────────────────┘</span></pre>
+      <pre class="term only-ru"><span class="c-red"> Usage: ininet-win [OPTIONS] COMMAND [ARGS]...</span>
+
+ Сканер сети и монитор соединений (Windows).
+
+<span class="c-magenta">┌─ Commands ──────────────────────────────────────────────────────────────┐</span>
+<span class="c-magenta">│</span> version     Показать версию ininet-win.                                  <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> admin       Показать статус прав (администратор или нет).               <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> interfaces  Показать локальные интерфейсы и их сети.                    <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> scan        Сканировать сеть: живые хосты и открытые порты.             <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> history     Список сохранённых сканов.                                  <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> diff        Сравнить два сохранённых скана: что изменилось.             <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> watch       Наблюдать за соединениями в реальном времени (только чтение).<span class="c-magenta">│</span>
+<span class="c-magenta">│</span> top         Топ процессов по числу соединений.                         <span class="c-magenta">│</span>
+<span class="c-magenta">│</span> lang        Показать или сменить язык интерфейса.                      <span class="c-magenta">│</span>
+<span class="c-magenta">└─────────────────────────────────────────────────────────────────────────┘</span></pre>
+    </div>
+    <p class="desc" style="margin-top:16px">
+      <span class="only-en">Status: <span class="c-green">Stages 0–4 done</span> · <span class="c-yellow">Stage 5 (TUI) — in progress</span> · next: services, .exe, topology, alerts</span>
+      <span class="only-ru">Статус: <span class="c-green">Этапы 0–4 готовы</span> · <span class="c-yellow">Этап 5 (TUI) — в разработке</span> · далее: сервисы, .exe, топология, алерты</span>
+    </p>
+  </section>
+</div>
+
+<footer>
+  <span class="brand">By InIProject · SkilinPur</span>
+</footer>
+
+<script>
+  const buttons = document.querySelectorAll('.nav button');
+  const screens = document.querySelectorAll('.screen');
+  buttons.forEach(btn => btn.addEventListener('click', () => {
+    buttons.forEach(b => b.classList.remove('active'));
+    screens.forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.t).classList.add('active');
+  }));
+
+  const titles = {
+    en: 'ininet-win — project preview',
+    ru: 'ininet-win — превью проекта',
+  };
+  const langButtons = document.querySelectorAll('[data-lang-btn]');
+  function setLang(lang) {
+    document.body.dataset.lang = lang;
+    document.documentElement.lang = lang;
+    document.title = titles[lang] || titles.ru;
+    langButtons.forEach(b => b.classList.toggle('active', b.dataset.langBtn === lang));
+  }
+  langButtons.forEach(btn => btn.addEventListener('click', () => setLang(btn.dataset.langBtn)));
+  setLang(document.body.dataset.lang || 'ru');
+</script>
+</body>
+</html>
