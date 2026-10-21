@@ -9,8 +9,8 @@ Windows-сборка сетевого инструмента **ininet**: **ск�
 
 Часть проектов команды [InIProject](https://iniproject.ru).
 
-> Отдельный репозиторий от Linux-версии ([`SkilinPur/ininet`](https://github.com/SkilinPur/ininet)):
-> общая идея и UX, разный платформенный слой (Windows API вместо `/proc`, `ss`, netlink).
+> **Linux-версия:** [SkilinPur/ininet](https://github.com/SkilinPur/ininet) — тот же
+> инструмент для Linux (отдельный репозиторий, свой платформенный слой).
 
 ---
 
