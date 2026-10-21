@@ -10,14 +10,14 @@
 - [x] Создать репо `SkilinPur/ininet-win` (private)
 - [x] Зафиксировать концепцию (`docs/CONCEPT.md`)
 - [x] Зафиксировать план (`docs/ROADMAP.md`)
-- [ ] Лицензия MIT (`LICENSE`)
-- [ ] `pyproject.toml` (PEP 621), entry-point `ininet-win`
-- [ ] Структура пакета `src/ininet_win/`
-- [ ] Проверка/настройка UTF-8 вывода в консоли Windows
-- [ ] `README.md`, `.gitignore`
-- [ ] venv, editable install, `ruff`, `pytest` — базовый прогон
+- [x] Лицензия MIT (`LICENSE`)
+- [x] `pyproject.toml` (PEP 621), entry-point `ininet-win`
+- [x] Структура пакета `src/ininet_win/`
+- [x] Проверка/настройка UTF-8 вывода в консоли Windows
+- [x] `README.md`, `.gitignore`
+- [x] venv, editable install, `ruff`, `pytest` — базовый прогон
 
-**Результат:** `ininet-win --help` работает на этой машине (Windows 10/11).
+**Результат:** `ininet-win --help` работает на этой машине (Windows 10/11). ✅ ГОТОВО
 
 ---
 
