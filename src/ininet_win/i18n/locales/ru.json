@@ -21,6 +21,7 @@
   "cmd.watch.help": "Наблюдать за соединениями в реальном времени (только чтение).",
   "cmd.top.help": "Топ процессов по числу соединений.",
   "cmd.lang.help": "Показать или сменить язык интерфейса.",
+  "cmd.tui.help": "Запустить интерактивный терминальный интерфейс (Scan / Watch / Top / History).",
 
   "opt.network.help": "Целевая сеть в CIDR, например 192.168.0.0/24",
   "opt.ports.help": "Диапазон портов, например 1-1024",
@@ -89,5 +90,26 @@
   "lang.set": "Язык: {lang}",
   "lang.changed": "Язык изменён на: {lang}",
   "lang.available": "Доступные языки: {langs}",
-  "lang.invalid": "Неподдерживаемый язык: {lang}"
+  "lang.invalid": "Неподдерживаемый язык: {lang}",
+
+  "tui.scan": "Scan",
+  "tui.watch": "Watch",
+  "tui.top": "Top",
+  "tui.history": "History",
+  "tui.quit": "q выход",
+  "tui.network": "Сеть",
+  "tui.ports": "Порты",
+  "tui.scan_btn": "Сканировать",
+  "tui.save_btn": "Сохранить",
+  "tui.refresh_btn": "Обновить",
+  "tui.status_idle": "Готово.",
+  "tui.status_scanning": "Сканирование {network} ...",
+  "tui.status_scanned": "Готово: {hosts} хост(ов), {ports} открытых порт(ов).",
+  "tui.status_saved": "Сохранено как снапшот #{id}.",
+  "tui.status_no_network": "Введите сеть в CIDR, например 10.0.0.0/24.",
+  "tui.status_watching": "Наблюдение за соединениями.",
+  "tui.status_error": "Ошибка: {message}",
+  "tui.filter": "Фильтр",
+  "tui.language": "Язык",
+  "tui.no_textual": "TUI требует пакет 'textual': pip install \"ininet-win[tui]\""
 }

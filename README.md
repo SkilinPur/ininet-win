@@ -21,7 +21,7 @@ Language: **English** | [Русский](README.ru.md)
 - **Scan** — host discovery and port scanning
 - **Watch** — live connection list with processes
 - **History** — scan history and diffs ("what changed")
-- **TUI / CLI** — interactive mode and a scriptable CLI
+- **TUI / CLI** — interactive terminal UI and a scriptable CLI
 - **Portable .exe** — run without installing Python (later)
 
 Full plan: [docs/ROADMAP.md](docs/ROADMAP.md)
@@ -52,6 +52,9 @@ ininet-win watch --json          # one-shot JSON snapshot
 # top processes by connection count
 ininet-win top -l 20
 
+# interactive terminal UI (Scan / Watch / Top / History)
+ininet-win tui
+
 # privilege check / relaunch with UAC
 ininet-win admin
 ininet-win admin --elevate
@@ -67,6 +70,8 @@ ininet-win history --prune 20   # keep only the latest 20
 `--no-ports`, `--json`, `--save`, `--db`.
 `watch` options: `--interval/-i`, `--count/-n`, `--process`, `--port`, `--host`,
 `--status`, `--connected`, `--json`, `--elevate`.
+`tui` options: `--interval/-i`.
+The TUI needs the optional extra: `pip install "ininet-win[tui]"`.
 
 > `watch`/`top` show processes for all connections only with administrator rights.
 > Without them, other users' processes appear as PID 0 / empty process, and
@@ -105,8 +110,8 @@ English. The preference is stored in `%LOCALAPPDATA%\ininet\config.json`.
 
 ## Status
 
-Early development. Stage 0 — project skeleton, plus scan/watch/elevate/history and
-localization (EN/RU).
+Early development. Stage 0 — project skeleton, plus scan/watch/elevate/history,
+localization (EN/RU) and the interactive TUI.
 
 ---
 

@@ -334,6 +334,21 @@ def _register_commands(app: typer.Typer) -> None:
                 )
 
 
+    @app.command()
+    def tui(
+        interval: float = typer.Option(
+            2.0, "--interval", "-i", help=_help("opt.interval.help")
+        ),
+    ) -> None:
+        """Launch the interactive terminal UI (Scan / Watch / Top / History)."""
+        try:
+            from ininet_win.tui.app import run_tui
+        except ImportError:
+            console.print(f"[red]{t('tui.no_textual')}[/red]")
+            raise typer.Exit(code=2) from None
+        run_tui(watch_interval=interval)
+
+
 def _diff_payload(result) -> dict:
     return {
         "old_network": result.old_network,

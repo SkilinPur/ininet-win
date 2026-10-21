@@ -21,7 +21,7 @@
   "cmd.watch.help": "Watch live network connections (read-only).",
   "cmd.top.help": "Show top processes by number of connections.",
   "cmd.lang.help": "Show or change the interface language.",
-
+  "cmd.tui.help": "Launch the interactive terminal UI (Scan / Watch / Top / History).",
   "opt.network.help": "Target network in CIDR, e.g. 192.168.0.0/24",
   "opt.ports.help": "Port range, e.g. 1-1024",
   "opt.timeout.help": "Ping timeout (seconds)",
@@ -89,5 +89,26 @@
   "lang.set": "Language: {lang}",
   "lang.changed": "Language changed to: {lang}",
   "lang.available": "Available languages: {langs}",
-  "lang.invalid": "Unsupported language: {lang}"
+  "lang.invalid": "Unsupported language: {lang}",
+
+  "tui.scan": "Scan",
+  "tui.watch": "Watch",
+  "tui.top": "Top",
+  "tui.history": "History",
+  "tui.quit": "q quit",
+  "tui.network": "Network",
+  "tui.ports": "Ports",
+  "tui.scan_btn": "Scan",
+  "tui.save_btn": "Save",
+  "tui.refresh_btn": "Refresh",
+  "tui.status_idle": "Ready.",
+  "tui.status_scanning": "Scanning {network} ...",
+  "tui.status_scanned": "Done: {hosts} host(s), {ports} open port(s).",
+  "tui.status_saved": "Saved as snapshot #{id}.",
+  "tui.status_no_network": "Enter a network in CIDR, e.g. 10.0.0.0/24.",
+  "tui.status_watching": "Watching live connections.",
+  "tui.status_error": "Error: {message}",
+  "tui.filter": "Filter",
+  "tui.language": "Language",
+  "tui.no_textual": "TUI requires the 'textual' package: pip install \"ininet-win[tui]\""
 }

@@ -21,7 +21,7 @@ Windows-сборка сетевого инструмента **ininet**: **ск�
 - **Scan** — обнаружение хостов и сканирование портов
 - **Watch** — живой список соединений с процессами
 - **History** — история сканов и диффы («что изменилось»)
-- **TUI / CLI** — интерактивный режим и скриптуемый CLI
+- **TUI / CLI** — интерактивный терминальный интерфейс и скриптуемый CLI
 - **Портативный .exe** — запуск без установки Python (позже)
 
 Полный план: [docs/ROADMAP.md](docs/ROADMAP.md)
@@ -52,6 +52,9 @@ ininet-win watch --json          # разовый снимок в JSON
 # топ процессов по числу соединений
 ininet-win top -l 20
 
+# интерактивный терминальный интерфейс (Scan / Watch / Top / History)
+ininet-win tui
+
 # проверка прав / перезапуск с UAC
 ininet-win admin
 ininet-win admin --elevate
@@ -67,6 +70,8 @@ ininet-win history --prune 20   # оставить только 20 послед�
 `--no-ports`, `--json`, `--save`, `--db`.
 Опции `watch`: `--interval/-i`, `--count/-n`, `--process`, `--port`, `--host`,
 `--status`, `--connected`, `--json`, `--elevate`.
+Опции `tui`: `--interval/-i`.
+TUI требует необязательный extra: `pip install "ininet-win[tui]"`.
 
 > `watch`/`top` показывают процессы для всех соединений только при правах
 > администратора. Без них чужие процессы отображаются как PID 0 / пустой процесс,
@@ -105,8 +110,8 @@ ininet-win history --prune 20   # оставить только 20 послед�
 
 ## Статус
 
-Ранняя разработка. Этап 0 — каркас проекта, плюс scan/watch/elevate/history и
-локализация (EN/RU).
+Ранняя разработка. Этап 0 — каркас проекта, плюс scan/watch/elevate/history,
+локализация (EN/RU) и интерактивный TUI.
 
 ---
 
