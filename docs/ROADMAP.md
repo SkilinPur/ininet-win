@@ -40,15 +40,15 @@
 
 ## Этап 2 — Watch: живые соединения (Windows)
 
-- [ ] Таблица TCP/UDP соединений через `psutil.net_connections(kind="inet")`
-- [ ] Маппинг сокет → процесс (имя, PID, путь)
+- [x] Таблица TCP/UDP соединений через `psutil.net_connections(kind="inet")`
+- [x] Маппинг сокет → процесс (имя, PID)
 - [ ] Дополнительно: `Get-NetTCPConnection` (точное состояние, если доступно)
 - [ ] Разрешение IP → имя хоста (опционально, с кэшем)
-- [ ] Таблица: protocol, local, remote, state, process, PID
-- [ ] CLI: `ininet-win watch [--interval 1] [--filter ...]`
-- [ ] Режим `top` — топ по числу соединений / процессам
+- [x] Таблица: proto, local, remote, state, process, PID
+- [x] CLI: `ininet-win watch [--interval 1] [--filter ...]`
+- [x] Режим `top` — топ по числу соединений / процессам
 
-**Результат:** `ininet-win watch` показывает живой поток соединений с процессами.
+**Результат:** `ininet-win watch` показывает живой поток соединений с процессами. ✅ ГОТОВО
 
 ---
 

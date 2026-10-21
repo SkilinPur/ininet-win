@@ -41,10 +41,20 @@ ininet-win scan 192.168.0.0/24 -p 22,80,443
 
 # вывод в JSON
 ininet-win scan 192.168.0.0/24 -p 1-1024 --json
+
+# живой монитор соединений (read-only)
+ininet-win watch
+ininet-win watch --process chrome --connected
+ininet-win watch --json          # разовый снимок в JSON
+
+# топ процессов по числу соединений
+ininet-win top -l 20
 ```
 
 Опции `scan`: `--ports/-p`, `--timeout/-t`, `--port-timeout`, `--jobs/-j`,
 `--no-ports`, `--json`.
+Опции `watch`: `--interval/-i`, `--count/-n`, `--process`, `--port`, `--host`,
+`--status`, `--connected`, `--json`.
 
 ---
 

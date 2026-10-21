@@ -24,5 +24,10 @@ def test_scan_help() -> None:
 
 
 def test_watch_stub() -> None:
-    result = runner.invoke(app, ["watch"])
+    result = runner.invoke(app, ["watch", "--json"])
+    assert result.exit_code == 0
+
+
+def test_top_json() -> None:
+    result = runner.invoke(app, ["top", "--json"])
     assert result.exit_code == 0
