@@ -37,6 +37,30 @@ Concept and Windows specifics: [docs/CONCEPT.md](docs/CONCEPT.md)
 
 ---
 
+## Screenshots
+
+**Scan** — host discovery with services and banners:
+
+![Scan](docs/tui-en-scan.svg)
+
+**Watch** — live connections mapped to processes:
+
+![Watch](docs/tui-en-watch.svg)
+
+**Topology** — the host graph from scan + live connections:
+
+![Map](docs/tui-en-map.svg)
+
+**Traffic** — per-interface volume and rate:
+
+![Traffic](docs/tui-en-traffic.svg)
+
+More: [Top](docs/tui-en-top.svg) · [History](docs/tui-en-history.svg) ·
+[Russian UI](docs/tui-ru-scan.svg). A static `docs/preview.html` has a
+browser-rendered landing preview.
+
+---
+
 ## Usage
 
 ```console

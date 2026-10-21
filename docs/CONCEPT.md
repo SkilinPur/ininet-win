@@ -87,12 +87,12 @@ ininet-win/
 ├── build.ps1               # сборка .exe (PyInstaller)
 ├── ininet-win.spec         # PyInstaller spec
 ├── assets/                 # иконка и метаданные версии
-├── tools/                  # генераторы иконки и version_info
+├── tools/               # генераторы иконки, version_info, скриншотов TUI
 ├── docs/
 │   ├── CONCEPT.md
 │   ├── ROADMAP.md
-│   ├── preview.html        # визуальное превью
-│   └── tui-preview-*.svg   # снапшоты TUI
+│   ├── preview.html        # визуальное превью (лендинг)
+│   └── tui-<lang>-<tab>.svg # снапшоты TUI (генерит tools/make_screenshots.py)
 ├── src/
 │   └── ininet_win/
 │       ├── __init__.py

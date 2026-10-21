@@ -37,6 +37,22 @@ Windows-сборка сетевого инструмента **ininet**: **ск�
 
 ---
 
+## Скриншоты
+
+| Scan | Watch |
+|---|---|
+| ![Scan](docs/tui-ru-scan.svg) | ![Watch](docs/tui-ru-watch.svg) |
+
+| Topology | Traffic |
+|---|---|
+| ![Карта](docs/tui-ru-map.svg) | ![Трафик](docs/tui-ru-traffic.svg) |
+
+Ещё: [Top](docs/tui-ru-top.svg) · [История](docs/tui-ru-history.svg) ·
+[английский интерфейс](docs/tui-en-scan.svg). Статичный `docs/preview.html` —
+лендинг-превью для браузера.
+
+---
+
 ## Использование
 
 ```console
