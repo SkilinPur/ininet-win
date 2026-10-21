@@ -1,97 +1,115 @@
 # ininet-win
 
-Windows-сборка сетевого инструмента **ininet**: **сканер сети + живой монитор соединений**.
+Windows build of the **ininet** network tool: a **network scanner + live connection monitor**.
 
-`ininet-win` отвечает на два вопроса:
+`ininet-win` answers two questions:
 
-1. **Что у меня в сети?** — хосты, порты, сервисы.
-2. **Что сейчас происходит?** — живые соединения, кто с кем разговаривает.
+1. **What is on my network?** — hosts, ports, services.
+2. **What is happening right now?** — live connections, who talks to whom.
 
-Часть проектов команды [InIProject](https://iniproject.ru).
+Part of the [InIProject](https://iniproject.ru) projects.
 
-> **Linux-версия:** [SkilinPur/ininet](https://github.com/SkilinPur/ininet) — тот же
-> инструмент для Linux (отдельный репозиторий, свой платформенный слой).
+> **Linux version:** [SkilinPur/ininet](https://github.com/SkilinPur/ininet) — the same
+> tool for Linux (separate repository, its own platform layer).
 
----
-
-## Возможности (план)
-
-- **Scan** — обнаружение хостов и сканирование портов
-- **Watch** — живой список соединений с процессами
-- **History** — история сканов и диффы («что изменилось»)
-- **TUI / CLI** — интерактивный режим и скриптуемый CLI
-- **Портативный .exe** — запуск без установки Python (позже)
-
-Полный план: [docs/ROADMAP.md](docs/ROADMAP.md)
-Концепция и Windows-специфика: [docs/CONCEPT.md](docs/CONCEPT.md)
+Language: **English** | [Русский](README.ru.md)
 
 ---
 
-## Использование
+## Features (roadmap)
+
+- **Scan** — host discovery and port scanning
+- **Watch** — live connection list with processes
+- **History** — scan history and diffs ("what changed")
+- **TUI / CLI** — interactive mode and a scriptable CLI
+- **Portable .exe** — run without installing Python (later)
+
+Full plan: [docs/ROADMAP.md](docs/ROADMAP.md)
+Concept and Windows specifics: [docs/CONCEPT.md](docs/CONCEPT.md)
+
+---
+
+## Usage
 
 ```console
-# список локальных интерфейсов и подсетей
+# list local interfaces and subnets
 ininet-win interfaces
 
-# обнаружение живых хостов в подсети
+# discover live hosts in a subnet
 ininet-win scan 192.168.0.0/24 --no-ports
 
-# скан хостов + портов, вывод таблицей
+# scan hosts + ports, print as a table
 ininet-win scan 192.168.0.0/24 -p 22,80,443
 
-# вывод в JSON
+# JSON output
 ininet-win scan 192.168.0.0/24 -p 1-1024 --json
 
-# живой монитор соединений (read-only)
+# live connection monitor (read-only)
 ininet-win watch
 ininet-win watch --process chrome --connected
-ininet-win watch --json          # разовый снимок в JSON
+ininet-win watch --json          # one-shot JSON snapshot
 
-# топ процессов по числу соединений
+# top processes by connection count
 ininet-win top -l 20
 
-# проверка прав / перезапуск с UAC
+# privilege check / relaunch with UAC
 ininet-win admin
 ininet-win admin --elevate
 
-# история сканов и дифф изменений
+# scan history and diffs
 ininet-win scan 192.168.0.0/24 --save
 ininet-win history
 ininet-win diff 1 2
-ininet-win history --prune 20   # оставить только 20 последних
+ininet-win history --prune 20   # keep only the latest 20
 ```
 
-Опции `scan`: `--ports/-p`, `--timeout/-t`, `--port-timeout`, `--jobs/-j`,
+`scan` options: `--ports/-p`, `--timeout/-t`, `--port-timeout`, `--jobs/-j`,
 `--no-ports`, `--json`, `--save`, `--db`.
-Опции `watch`: `--interval/-i`, `--count/-n`, `--process`, `--port`, `--host`,
+`watch` options: `--interval/-i`, `--count/-n`, `--process`, `--port`, `--host`,
 `--status`, `--connected`, `--json`, `--elevate`.
 
-> `watch`/`top` показывают процессы для всех соединений только при правах
-> администратора. Без них чужие процессы отображаются как PID 0 / пустой процесс,
-> а `--elevate` перезапускает команду через UAC.
+> `watch`/`top` show processes for all connections only with administrator rights.
+> Without them, other users' processes appear as PID 0 / empty process, and
+> `--elevate` relaunches the command via UAC.
 
 ---
 
-## Платформа
+## Language
 
-- **Windows 10/11** — основной таргет
-- Основной терминал: **Windows Terminal**
+The interface is bilingual (English / Russian):
+
+- `--lang en|ru` (or `-L`) — override for a single run
+- `ININET_LANG` environment variable — override for the session
+- `ininet-win lang` — show or change the saved language
+- `ininet-win lang ru` — switch to Russian and save the choice
+
+Precedence: `--lang` > `ININET_LANG` > saved config > system locale. On the first
+interactive run you are asked to choose a language; non-interactive runs default to
+English. The preference is stored in `%LOCALAPPDATA%\ininet\config.json`.
 
 ---
 
-## Требования
+## Platform
+
+- **Windows 10/11** — primary target
+- Primary terminal: **Windows Terminal**
+
+---
+
+## Requirements
 
 - Python 3.10+
-- Часть функций может требовать прав администратора (будет помечено явно)
+- Some features may require administrator rights (will be marked explicitly)
 
 ---
 
-## Статус
+## Status
 
-Ранняя разработка. Этап 0 — каркас проекта.
+Early development. Stage 0 — project skeleton, plus scan/watch/elevate/history and
+localization (EN/RU).
 
 ---
 
-## Лицензия
+## License
 
-MIT — см. [LICENSE](LICENSE)
+MIT — see [LICENSE](LICENSE)

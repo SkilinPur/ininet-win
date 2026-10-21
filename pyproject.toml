@@ -36,7 +36,7 @@ dev = [
 ]
 
 [project.scripts]
-ininet-win = "ininet_win.cli:app"
+ininet-win = "ininet_win.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/SkilinPur/ininet-win"
@@ -45,6 +45,9 @@ Organization = "https://iniproject.ru"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ininet_win"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/ininet_win/i18n/locales" = "ininet_win/i18n/locales"
 
 [tool.ruff]
 line-length = 100

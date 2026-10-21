@@ -1,4 +1,4 @@
-from ininet_win.cli import app
+from ininet_win.cli import main
 
 if __name__ == "__main__":
-    app()
+    main()

@@ -9,6 +9,7 @@ from rich.table import Table
 
 from ininet_win.core.monitor import Connection, ProcessGroup
 from ininet_win.core.scan import ScanResult
+from ininet_win.i18n.translator import t
 
 
 def render_table(result: ScanResult, console: Console | None = None) -> None:
@@ -16,20 +17,20 @@ def render_table(result: ScanResult, console: Console | None = None) -> None:
     console = console or Console()
 
     console.print(
-        f"[bold]Network[/bold] {result.network}  "
-        f"[green]{result.host_count}[/green] host(s), "
-        f"[cyan]{result.open_port_count}[/cyan] open port(s)"
+        f"[bold]{t('common.network')}[/bold] {result.network}  "
+        f"[green]{result.host_count}[/green] {t('common.host_s')}, "
+        f"[cyan]{result.open_port_count}[/cyan] {t('common.open_port_s')}"
     )
 
     if not result.hosts:
-        console.print("[yellow]No live hosts found.[/yellow]")
+        console.print(f"[yellow]{t('common.no_live_hosts')}[/yellow]")
         return
 
     table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("IP", style="green", no_wrap=True)
-    table.add_column("MAC", style="dim")
-    table.add_column("Ports", style="cyan")
-    table.add_column("Services", style="white")
+    table.add_column(t("table.ip"), style="green", no_wrap=True)
+    table.add_column(t("table.mac"), style="dim")
+    table.add_column(t("table.ports"), style="cyan")
+    table.add_column(t("table.services"), style="white")
 
     for host in result.hosts:
         ports = ", ".join(str(p.port) for p in host.ports) or "-"
@@ -63,16 +64,16 @@ def render_connections(conns: list[Connection], console: Console | None = None) 
     """Print a live connection table."""
     console = console or Console()
     if not conns:
-        console.print("[yellow]No connections.[/yellow]")
+        console.print(f"[yellow]{t('common.no_connections')}[/yellow]")
         return
 
     table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("Proto", style="dim", no_wrap=True)
-    table.add_column("Local", style="cyan", no_wrap=True)
-    table.add_column("Remote", style="green", no_wrap=True)
-    table.add_column("State", style="yellow", no_wrap=True)
-    table.add_column("PID", justify="right", style="dim", no_wrap=True)
-    table.add_column("Process", style="white")
+    table.add_column(t("table.proto"), style="dim", no_wrap=True)
+    table.add_column(t("table.local"), style="cyan", no_wrap=True)
+    table.add_column(t("table.remote"), style="green", no_wrap=True)
+    table.add_column(t("table.state"), style="yellow", no_wrap=True)
+    table.add_column(t("table.pid"), justify="right", style="dim", no_wrap=True)
+    table.add_column(t("table.process"), style="white")
 
     for conn in conns:
         table.add_row(
@@ -90,15 +91,15 @@ def render_top(groups: list[ProcessGroup], console: Console | None = None, limit
     """Print top processes by connection count."""
     console = console or Console()
     if not groups:
-        console.print("[yellow]No connections.[/yellow]")
+        console.print(f"[yellow]{t('common.no_connections')}[/yellow]")
         return
 
     table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("Count", justify="right", style="cyan", no_wrap=True)
-    table.add_column("PID", justify="right", style="dim", no_wrap=True)
-    table.add_column("Process", style="white")
-    table.add_column("Remote hosts", style="green", justify="right")
-    table.add_column("Remote ports", style="yellow")
+    table.add_column(t("table.count"), justify="right", style="cyan", no_wrap=True)
+    table.add_column(t("table.pid"), justify="right", style="dim", no_wrap=True)
+    table.add_column(t("table.process"), style="white")
+    table.add_column(t("table.remote_hosts"), style="green", justify="right")
+    table.add_column(t("table.remote_ports"), style="yellow")
 
     for group in groups[:limit]:
         hosts = str(len(group.remote_hosts)) if group.remote_hosts else "0"
@@ -133,15 +134,15 @@ def render_history(snapshots, console: Console | None = None) -> None:
     """Print a table of saved scan snapshots."""
     console = console or Console()
     if not snapshots:
-        console.print("[yellow]No saved scans.[/yellow]")
+        console.print(f"[yellow]{t('common.no_saved_scans')}[/yellow]")
         return
 
     table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("ID", justify="right", style="cyan", no_wrap=True)
-    table.add_column("Created", style="dim", no_wrap=True)
-    table.add_column("Network", style="green", no_wrap=True)
-    table.add_column("Hosts", justify="right", style="white")
-    table.add_column("Open ports", justify="right", style="yellow")
+    table.add_column(t("table.id"), justify="right", style="cyan", no_wrap=True)
+    table.add_column(t("table.created"), style="dim", no_wrap=True)
+    table.add_column(t("table.network"), style="green", no_wrap=True)
+    table.add_column(t("table.hosts"), justify="right", style="white")
+    table.add_column(t("table.open_ports"), justify="right", style="yellow")
 
     for snap in snapshots:
         table.add_row(
@@ -159,13 +160,13 @@ def render_diff(diff, console: Console | None = None) -> None:
     console = console or Console()
     console.print(f"[bold]Diff[/bold] {diff.old_network} -> {diff.new_network}")
     if not diff.has_changes:
-        console.print("[green]No changes.[/green]")
+        console.print(f"[green]{t('diff.no_changes')}[/green]")
         return
 
     if diff.added_hosts:
-        console.print(f"[green]+ hosts:[/green] {', '.join(diff.added_hosts)}")
+        console.print(f"[green]{t('diff.added_hosts')}[/green] {', '.join(diff.added_hosts)}")
     if diff.removed_hosts:
-        console.print(f"[red]- hosts:[/red] {', '.join(diff.removed_hosts)}")
+        console.print(f"[red]{t('diff.removed_hosts')}[/red] {', '.join(diff.removed_hosts)}")
     for change in diff.changed_hosts:
         parts = []
         if change.added_ports:

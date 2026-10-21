@@ -2,6 +2,7 @@ from typer.testing import CliRunner
 
 from ininet_win import __version__
 from ininet_win.cli import app
+from ininet_win.i18n import translator
 
 runner = CliRunner()
 
@@ -48,3 +49,34 @@ def test_diff_missing_snapshot(tmp_path) -> None:
     db = tmp_path / "d.db"
     result = runner.invoke(app, ["diff", "1", "2", "--db", str(db)])
     assert result.exit_code == 2
+
+
+def test_lang_flag_localizes_output() -> None:
+    try:
+        result = runner.invoke(app, ["--lang", "ru", "version"])
+        assert result.exit_code == 0
+        assert translator.current_language() == "ru"
+    finally:
+        translator.set_language("en")
+
+
+def test_lang_show() -> None:
+    result = runner.invoke(app, ["--lang", "en", "lang"])
+    assert result.exit_code == 0
+    assert "en" in result.stdout
+    assert "ru" in result.stdout
+
+
+def test_lang_set_invalid() -> None:
+    result = runner.invoke(app, ["--lang", "en", "lang", "zz"])
+    assert result.exit_code == 2
+
+
+def test_lang_set_valid(tmp_path, monkeypatch) -> None:
+    from ininet_win import language
+
+    monkeypatch.setattr(language.cfg, "default_config_path", lambda: tmp_path / "c.json")
+    result = runner.invoke(app, ["--lang", "en", "lang", "ru"])
+    assert result.exit_code == 0
+    assert (tmp_path / "c.json").is_file()
+    translator.set_language("en")
