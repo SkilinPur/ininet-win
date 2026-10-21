@@ -4,16 +4,29 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ininet-win"
-version = "0.0.1"
+version = "0.1.0"
 description = "Windows build of ininet - network scanner & live connection monitor (TUI/CLI)."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 authors = [{ name = "SkilinPur", email = "rolandgroz31@gmail.com" }]
-keywords = ["network", "scanner", "monitor", "tui", "cli", "security", "windows"]
+keywords = [
+    "network",
+    "scanner",
+    "port-scanner",
+    "monitor",
+    "connections",
+    "topology",
+    "traffic",
+    "tui",
+    "cli",
+    "security",
+    "windows",
+]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 4 - Beta",
     "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
     "Intended Audience :: System Administrators",
     "License :: OSI Approved :: MIT License",
     "Operating System :: Microsoft :: Windows",

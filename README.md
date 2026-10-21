@@ -18,13 +18,19 @@ Language: **English** | [Русский](README.ru.md)
 
 ---
 
-## Features (roadmap)
+## Features
 
-- **Scan** — host discovery and port scanning
-- **Watch** — live connection list with processes
-- **History** — scan history and diffs ("what changed")
-- **TUI / CLI** — interactive terminal UI and a scriptable CLI
-- **Portable .exe** — run without installing Python (later)
+- **Scan** — host discovery and TCP port scanning, with banner grabbing for
+  service identification
+- **Watch** — live connection list mapped to owning processes
+- **Top** — top processes by number of connections
+- **Topology** — a host graph combining scan results and live connections
+- **Traffic** — per-interface volume and rate (light mode, no driver, no admin)
+- **History** — saved scan snapshots and diffs ("what changed")
+- **TUI** — interactive terminal UI (Scan / Watch / Top / Traffic / Map / History)
+- **CLI** — scriptable commands with rich tables and JSON output
+- **Bilingual** — English / Russian interface
+- **Portable .exe** — single-file build, runs without installing Python
 
 Full plan: [docs/ROADMAP.md](docs/ROADMAP.md)
 Concept and Windows specifics: [docs/CONCEPT.md](docs/CONCEPT.md)
@@ -148,8 +154,10 @@ Official builds are produced by CI: pushing a tag like `v0.1.0` builds the
 
 ## Status
 
-Early development. Stages 0–7 — skeleton, scan/watch/elevate/history,
-localization (EN/RU), the interactive TUI and the single-file `.exe` build.
+Feature-complete for the core scope (Stages 0–9): scanning, live monitoring,
+history/diffs, service detection, the interactive TUI, topology and traffic,
+localization and a single-file `.exe` build. Alerts and a public release
+(Stage 10) are left as optional future work.
 
 ---
 

@@ -82,31 +82,46 @@
 ```
 ininet-win/
 ├── pyproject.toml
-├── README.md
+├── README.md / README.ru.md
 ├── LICENSE
-├── build/                  # PyInstaller spec, иконка, ресурсы
+├── build.ps1               # сборка .exe (PyInstaller)
+├── ininet-win.spec         # PyInstaller spec
+├── assets/                 # иконка и метаданные версии
+├── tools/                  # генераторы иконки и version_info
 ├── docs/
 │   ├── CONCEPT.md
 │   ├── ROADMAP.md
-│   └── PLATFORM.md         # заметки по Windows API
+│   ├── preview.html        # визуальное превью
+│   └── tui-preview-*.svg   # снапшоты TUI
 ├── src/
 │   └── ininet_win/
 │       ├── __init__.py
 │       ├── __main__.py
-│       ├── cli.py
-│       ├── tui/
-│       ├── core/
-│       │   ├── discovery.py
-│       │   ├── scanner.py
-│       │   ├── monitor.py
-│       │   └── topology.py
-│       ├── platform/
-│       │   ├── connections.py   # psutil + Get-NetTCPConnection
-│       │   ├── neighbors.py     # arp -a / Get-NetNeighbor
-│       │   ├── icmp.py          # ping / IcmpSendEcho
-│       │   └── elevate.py       # проверка/запрос прав админа
+│       ├── cli.py          # команды typer
+│       ├── render.py       # таблицы rich, вывод topology/traffic
+│       ├── console.py      # UTF-8 и вывод
+│       ├── config.py       # конфиг (%LOCALAPPDATA%\ininet)
+│       ├── language.py     # выбор языка при первом запуске
+│       ├── i18n/           # translator + locales/{en,ru}.json
+│       ├── tui/            # textual-приложение (вкладки)
+│       ├── core/           # платформо-независимое ядро
+│       │   ├── scan.py / scanner.py / ports.py
+│       │   ├── monitor.py        # соединения, топ процессов
+│       │   ├── services.py       # справочник портов
+│       │   ├── banner.py         # чтение баннеров
+│       │   ├── diff.py           # «что изменилось»
+│       │   ├── topology.py       # граф сети
+│       │   ├── traffic.py        # объём/скорость по интерфейсам
+│       │   └── netutil.py
+│       ├── platform/       # вся Windows-специфика
+│       │   ├── connections.py    # psutil
+│       │   ├── neighbors.py      # arp -a / Get-NetNeighbor
+│       │   ├── icmp.py           # ping / IcmpSendEcho
+│       │   ├── ifaces.py         # интерфейсы и подсети
+│       │   ├── traffic.py        # net_io_counters
+│       │   └── elevate.py        # проверка/запрос прав админа
 │       └── storage/
-│           └── db.py
+│           └── db.py             # SQLite: снапшоты, история
 └── tests/
 ```
 
