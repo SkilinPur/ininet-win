@@ -80,3 +80,35 @@ def test_lang_set_valid(tmp_path, monkeypatch) -> None:
     assert result.exit_code == 0
     assert (tmp_path / "c.json").is_file()
     translator.set_language("en")
+
+
+def test_main_no_args_launches_tui(monkeypatch) -> None:
+    import sys
+
+    from ininet_win import cli
+
+    called = {"tui": False}
+
+    def fake_run_tui(*_args, **_kwargs) -> None:
+        called["tui"] = True
+
+    monkeypatch.setattr("ininet_win.tui.app.run_tui", fake_run_tui)
+    monkeypatch.setattr(sys, "argv", ["ininet-win"])
+    cli.main()
+    assert called["tui"] is True
+
+
+def test_main_with_subcommand_dispatches(monkeypatch) -> None:
+    import sys
+
+    from ininet_win import cli
+
+    called = {"app": False}
+
+    def fake_app(*_args, **_kwargs) -> None:
+        called["app"] = True
+
+    monkeypatch.setattr(cli, "app", fake_app)
+    monkeypatch.setattr(sys, "argv", ["ininet-win", "version"])
+    cli.main()
+    assert called["app"] is True

@@ -111,10 +111,24 @@ English. The preference is stored in `%LOCALAPPDATA%\ininet\config.json`.
 
 ---
 
+## Build (single-file .exe)
+
+Requires Windows and Python. Creates a standalone `dist/ininet-win.exe` with
+embedded icon, version metadata and locales (no Python needed to run it):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build.ps1
+```
+
+Then double-click `ininet-win.exe` (starts the TUI) or call subcommands, e.g.
+`ininet-win.exe scan 192.168.0.0/24`.
+
+---
+
 ## Status
 
-Early development. Stage 0 — project skeleton, plus scan/watch/elevate/history,
-localization (EN/RU) and the interactive TUI.
+Early development. Stages 0–7 — skeleton, scan/watch/elevate/history,
+localization (EN/RU), the interactive TUI and the single-file `.exe` build.
 
 ---
 

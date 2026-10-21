@@ -99,8 +99,8 @@
 
 ## Этап 7 — Упаковка в .exe
 
-- [ ] PyInstaller one-file сборка
-- [ ] Иконка, версия, метаданные
+- [x] PyInstaller one-file сборка (`ininet-win.spec`, `build.ps1`)
+- [x] Иконка, версия, метаданные (`assets/ininet.ico`, `version_info.txt`)
 - [ ] Проверка запуска на «чистой» Windows (без Python)
 - [ ] Артефакт в GitHub Releases
 

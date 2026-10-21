@@ -111,10 +111,24 @@ TUI требует необязательный extra: `pip install "ininet-win[
 
 ---
 
+## Сборка (однофайловый .exe)
+
+Нужны Windows и Python. Создаёт самодостаточный `dist/ininet-win.exe` со
+встроенной иконкой, метаданными версии и локалями (для запуска Python не нужен):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build.ps1
+```
+
+Затем двойной клик по `ininet-win.exe` (открывает TUI) или подкоманды, напр.
+`ininet-win.exe scan 192.168.0.0/24`.
+
+---
+
 ## Статус
 
-Ранняя разработка. Этап 0 — каркас проекта, плюс scan/watch/elevate/history,
-локализация (EN/RU) и интерактивный TUI.
+Ранняя разработка. Этапы 0–7 — каркас, scan/watch/elevate/history,
+локализация (EN/RU), интерактивный TUI и однофайловая сборка `.exe`.
 
 ---
 

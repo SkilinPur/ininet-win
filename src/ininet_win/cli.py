@@ -383,7 +383,11 @@ app = _build_app()
 
 
 def main() -> None:
-    """Entry point: offer the language prompt on the first interactive run."""
+    """Entry point: launch the TUI by default, or dispatch a subcommand.
+
+    With no arguments (e.g. double-clicking the .exe) the interactive TUI is
+    started. On the first interactive run the language is asked once.
+    """
     import sys
 
     argv = sys.argv[1:]
@@ -397,7 +401,22 @@ def main() -> None:
         if prompted:
             translator.set_language(resolved)
 
+    if not argv:
+        _run_tui_default()
+        return
+
     app()
+
+
+def _run_tui_default() -> None:
+    """Launch the TUI, falling back to help if textual is unavailable."""
+    try:
+        from ininet_win.tui.app import run_tui
+    except ImportError:
+        console.print(t("tui.no_textual"))
+        app()
+        return
+    run_tui()
 
 
 if __name__ == "__main__":
